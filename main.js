@@ -1,11 +1,8 @@
 const express = require('express')
 const app = express()
-const dotenv = require('dotenv')
-const fetch = require('node-fetch')
 const fs = require('fs')
-dotenv.config()
 
-const port = 8080
+const port = 5690
 
 // Add headers
 // https://stackoverflow.com/a/18311469
@@ -61,8 +58,6 @@ app.post('/', (request, response) => {
   }
   response.end('OK')
 })
-
-// app.post('/users', db.createUser)
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)

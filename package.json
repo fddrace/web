@@ -13,9 +13,6 @@
     "author": "ChillerDragon",
     "license": "Unlicense",
     "dependencies": {
-        "dotenv": "^8.2.0",
-        "express": "^4.17.1",
-        "node-fetch": "^2.6.1",
-        "pg": "^8.4.1"
+        "express": "^4.17.1"
     }
 }
