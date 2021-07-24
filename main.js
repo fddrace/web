@@ -1,6 +1,10 @@
 const express = require('express')
 const app = express()
 const fs = require('fs')
+const dotenv = require('dotenv')
+dotenv.config()
+
+const { sendMail } = require('./src/account')
 
 const port = 5690
 
@@ -30,11 +34,9 @@ app.use(
   })
 )
 
-app.use(express.static('data'))
-
 app.get('/', (request, response) => {
   response.writeHead(200, { 'Content-Type': 'text/html' })
-  fs.readFile('./index.html', 'utf8', (err, data) => {
+  fs.readFile('./html/index.html', 'utf8', (err, data) => {
     if (err) {
       response.end('error')
       return console.log(err)
@@ -44,6 +46,23 @@ app.get('/', (request, response) => {
         .replaceAll('placeholder-token', 'secure-token')
     )
   })
+})
+
+app.get('/account', (request, response) => {
+  response.writeHead(200, { 'Content-Type': 'text/html' })
+  fs.readFile('./html/account.html', 'utf8', (err, data) => {
+    if (err) {
+      response.end('error')
+      return console.log(err)
+    }
+    response.end(data)
+  })
+})
+
+app.post('/account', (request, response) => {
+  response.writeHead(200, { 'Content-Type': 'text/html' })
+  response.end('<html>OK</html>')
+  sendMail(request.body.email)
 })
 
 app.use(express.json())
