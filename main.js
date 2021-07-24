@@ -4,7 +4,8 @@ const fs = require('fs')
 const dotenv = require('dotenv')
 dotenv.config()
 
-const { sendMail } = require('./src/account')
+const { sendMail } = require('./src/mail')
+const { loginAccount } = require('./src/account')
 
 const port = 5690
 
@@ -59,7 +60,35 @@ app.get('/account', (request, response) => {
   })
 })
 
-app.post('/account', (request, response) => {
+app.get('/login', (request, response) => {
+  response.writeHead(200, { 'Content-Type': 'text/html' })
+  fs.readFile('./html/login.html', 'utf8', (err, data) => {
+    if (err) {
+      response.end('error')
+      return console.log(err)
+    }
+    response.end(data)
+  })
+})
+
+app.post('/login', (request, response) => {
+  response.writeHead(200, { 'Content-Type': 'text/html' })
+  response.end('<html>OK</html>')
+  loginAccount(request.body.username, request.body.password)
+})
+
+app.get('/reset', (request, response) => {
+  response.writeHead(200, { 'Content-Type': 'text/html' })
+  fs.readFile('./html/reset.html', 'utf8', (err, data) => {
+    if (err) {
+      response.end('error')
+      return console.log(err)
+    }
+    response.end(data)
+  })
+})
+
+app.post('/reset', (request, response) => {
   response.writeHead(200, { 'Content-Type': 'text/html' })
   response.end('<html>OK</html>')
   sendMail(request.body.email)
