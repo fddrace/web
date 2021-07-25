@@ -1,7 +1,11 @@
 const express = require('express')
+const session = require('express-session')
+const redis = require('redis')
 const app = express()
 const fs = require('fs')
 const dotenv = require('dotenv')
+const redisStore = require('connect-redis')(session)
+const redisClient = redis.createClient()
 dotenv.config()
 
 const { sendMail } = require('./src/mail')
@@ -35,40 +39,33 @@ app.use(
   })
 )
 
-app.get('/', (request, response) => {
-  response.writeHead(200, { 'Content-Type': 'text/html' })
-  fs.readFile('./html/index.html', 'utf8', (err, data) => {
-    if (err) {
-      response.end('error')
-      return console.log(err)
-    }
-    response.end(
-      data
-        .replaceAll('placeholder-token', 'secure-token')
-    )
-  })
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  store: new redisStore({ host: 'localhost', port: 6379, client: redisClient, ttl: 260 }),
+  saveUninitialized: true,
+  resave: true
+}))
+
+app.set('view engine', 'ejs')
+
+app.get('/', (req, res) => {
+  res.render('index', { token: 'secure-token' })
 })
 
-app.get('/account', (request, response) => {
-  response.writeHead(200, { 'Content-Type': 'text/html' })
-  fs.readFile('./html/account.html', 'utf8', (err, data) => {
-    if (err) {
-      response.end('error')
-      return console.log(err)
-    }
-    response.end(data)
-  })
+app.get('/login', (req, res) => {
+  res.render('login')
 })
 
-app.get('/login', (request, response) => {
-  response.writeHead(200, { 'Content-Type': 'text/html' })
-  fs.readFile('./html/login.html', 'utf8', (err, data) => {
-    if (err) {
-      response.end('error')
-      return console.log(err)
-    }
-    response.end(data)
-  })
+app.get('/account', (req, res) => {
+  if (req.session.data) {
+    res.render('account', { data: req.session.data })
+  } else {
+    res.redirect(301, '/login')
+  }
+})
+
+app.get('/reset', (req, res) => {
+  res.render('reset')
 })
 
 app.post('/login', async (request, response) => {
@@ -76,20 +73,10 @@ app.post('/login', async (request, response) => {
   const loggedIn = await loginAccount(request.body.username, request.body.password)
   if (loggedIn) {
     response.end('<html>Sucessfully logged in. <a href="login">back</a></html>')
+    request.session.data = loggedIn
   } else {
     response.end('<html>Failed to login. <a href="login">back</a></html>')
   }
-})
-
-app.get('/reset', (request, response) => {
-  response.writeHead(200, { 'Content-Type': 'text/html' })
-  fs.readFile('./html/reset.html', 'utf8', (err, data) => {
-    if (err) {
-      response.end('error')
-      return console.log(err)
-    }
-    response.end(data)
-  })
 })
 
 app.post('/reset', (request, response) => {

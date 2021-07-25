@@ -13,8 +13,12 @@
     "author": "ChillerDragon",
     "license": "Unlicense",
     "dependencies": {
+        "connect-redis": "^6.0.0",
         "dotenv": "^10.0.0",
+        "ejs": "^3.1.6",
         "express": "^4.17.1",
-        "nodemailer": "^6.6.3"
+        "express-session": "^1.17.2",
+        "nodemailer": "^6.6.3",
+        "redis": "^3.1.2"
     }
 }
