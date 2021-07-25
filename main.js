@@ -2,7 +2,6 @@ const express = require('express')
 const session = require('express-session')
 const redis = require('redis')
 const app = express()
-const fs = require('fs')
 const dotenv = require('dotenv')
 const redisStore = require('connect-redis')(session)
 const redisClient = redis.createClient()
@@ -49,7 +48,7 @@ app.use(session({
 app.set('view engine', 'ejs')
 
 app.get('/', (req, res) => {
-  res.render('index', { token: 'secure-token' })
+  res.render('index', { token: process.env.CAPTCHA_TOKEN, callbackUrl: process.env.CAPTCHA_CALLBACK })
 })
 
 app.get('/login', (req, res) => {
@@ -60,7 +59,7 @@ app.get('/account', (req, res) => {
   if (req.session.data) {
     res.render('account', { data: req.session.data })
   } else {
-    res.redirect(301, '/login')
+    res.redirect('/login')
   }
 })
 
@@ -68,12 +67,22 @@ app.get('/reset', (req, res) => {
   res.render('reset')
 })
 
+app.get('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      console.log(err)
+    } else {
+      res.redirect('/')
+    }
+  })
+})
+
 app.post('/login', async (request, response) => {
   response.writeHead(200, { 'Content-Type': 'text/html' })
   const loggedIn = await loginAccount(request.body.username, request.body.password)
   if (loggedIn) {
-    response.end('<html>Sucessfully logged in. <a href="login">back</a></html>')
     request.session.data = loggedIn
+    response.end('<html>Sucessfully logged in. <a href="account">ok</a></html>')
   } else {
     response.end('<html>Failed to login. <a href="login">back</a></html>')
   }
