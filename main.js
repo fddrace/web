@@ -88,7 +88,7 @@ app.post('/login', async (request, response) => {
     return
   }
   // tokens are one use only
-  captchaData[request.body.token] = undefined
+  delete captchaData[request.body.token]
   const loggedIn = await loginAccount(request.body.username, request.body.password)
   if (loggedIn) {
     request.session.data = loggedIn
@@ -109,8 +109,10 @@ app.use(express.json())
 app.set('trust proxy', true)
 
 app.post('/', (request, response) => {
-  captchaData[request.body.token] = request.session.captchaScore
-  if (request.body.score === 1) {
+  const score = request.body.score
+  if (score === 1) {
+    // do not save robot scores to save memory
+    captchaData[request.body.token] = score
     console.log(`[captcha] result=hooman ip=${request.ip}`)
   } else {
     console.log(`[captcha] result=robot ip=${request.ip}`)
