@@ -52,7 +52,7 @@ app.get('/', (req, res) => {
 })
 
 app.get('/login', (req, res) => {
-  res.render('login')
+  res.render('login', { token: process.env.CAPTCHA_TOKEN, callbackUrl: process.env.CAPTCHA_CALLBACK })
 })
 
 app.get('/account', (req, res) => {
@@ -79,6 +79,10 @@ app.get('/logout', (req, res) => {
 
 app.post('/login', async (request, response) => {
   response.writeHead(200, { 'Content-Type': 'text/html' })
+  if (request.session.captchaScore !== 1) {
+    response.end('<html>Failed to login. Are you a robot?<a href="login">back</a></html>')
+    return
+  }
   const loggedIn = await loginAccount(request.body.username, request.body.password)
   if (loggedIn) {
     request.session.data = loggedIn
@@ -99,10 +103,11 @@ app.use(express.json())
 app.set('trust proxy', true)
 
 app.post('/', (request, response) => {
+  request.session.captchaScore = request.body.score
   if (request.body.score === 1) {
-    console.log(`[hooman] ip=${request.ip}`)
+    console.log(`[captcha] result=hooman ip=${request.ip}`)
   } else {
-    console.log(`[robot] ip=${request.ip}`)
+    console.log(`[captcha] result=robot ip=${request.ip}`)
   }
   response.end('OK')
 })
