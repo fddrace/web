@@ -1,6 +1,7 @@
 const express = require('express')
 const session = require('express-session')
 const redis = require('redis')
+const { v4: uuidv4 } = require('uuid')
 const app = express()
 const dotenv = require('dotenv')
 const redisStore = require('connect-redis')(session)
@@ -38,6 +39,8 @@ app.use(
   })
 )
 
+const captchaData = {}
+
 app.use(session({
   secret: process.env.SESSION_SECRET,
   store: new redisStore({ host: 'localhost', port: 6379, client: redisClient, ttl: 260 }),
@@ -52,7 +55,8 @@ app.get('/', (req, res) => {
 })
 
 app.get('/login', (req, res) => {
-  res.render('login', { token: process.env.CAPTCHA_TOKEN, callbackUrl: process.env.CAPTCHA_CALLBACK })
+  const token = uuidv4()
+  res.render('login', { token: token, callbackUrl: process.env.CAPTCHA_CALLBACK })
 })
 
 app.get('/account', (req, res) => {
@@ -79,10 +83,12 @@ app.get('/logout', (req, res) => {
 
 app.post('/login', async (request, response) => {
   response.writeHead(200, { 'Content-Type': 'text/html' })
-  if (request.session.captchaScore !== 1) {
+  if (captchaData[request.body.token] !== 1) {
     response.end('<html>Failed to login. Are you a robot?<a href="login">back</a></html>')
     return
   }
+  // tokens are one use only
+  captchaData[request.body.token] = undefined
   const loggedIn = await loginAccount(request.body.username, request.body.password)
   if (loggedIn) {
     request.session.data = loggedIn
@@ -103,7 +109,7 @@ app.use(express.json())
 app.set('trust proxy', true)
 
 app.post('/', (request, response) => {
-  request.session.captchaScore = request.body.score
+  captchaData[request.body.token] = request.session.captchaScore
   if (request.body.score === 1) {
     console.log(`[captcha] result=hooman ip=${request.ip}`)
   } else {

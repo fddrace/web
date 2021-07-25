@@ -14,6 +14,7 @@
         <label for="password">Password:</label>
         <input type="password" name="password" id="password" placeholder="password">
         <br>
+        <input type="hidden" name="token" id="token" value="<%= token %>">
         <input type="submit" value="login">
     </form>
     <iframe width="720px" height="600px" src="https://captcha.zillyhuhn.com/?t=<%= token %>&callback=<%= callbackUrl %>" scrolling="no" frameborder="0"></iframe>
