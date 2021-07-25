@@ -8,9 +8,11 @@
 </head>
 <body>
     <form action="/login" method="POST">
-        <input type="text" name="username" id="username">
+        <label for="username">Username:</label>
+        <input type="text" name="username" id="username" placeholder="username">
         <br>
-        <input type="password" name="password" id="password">
+        <label for="password">Password:</label>
+        <input type="password" name="password" id="password" placeholder="password">
         <br>
         <input type="submit" value="login">
     </form>

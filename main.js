@@ -71,10 +71,14 @@ app.get('/login', (request, response) => {
   })
 })
 
-app.post('/login', (request, response) => {
+app.post('/login', async (request, response) => {
   response.writeHead(200, { 'Content-Type': 'text/html' })
-  response.end('<html>OK</html>')
-  loginAccount(request.body.username, request.body.password)
+  const loggedIn = await loginAccount(request.body.username, request.body.password)
+  if (loggedIn) {
+    response.end('<html>Sucessfully logged in. <a href="login">back</a></html>')
+  } else {
+    response.end('<html>Failed to login. <a href="login">back</a></html>')
+  }
 })
 
 app.get('/reset', (request, response) => {
