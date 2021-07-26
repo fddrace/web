@@ -43,7 +43,9 @@ const captchaData = {}
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
+  /* eslint-disable new-cap */
   store: new redisStore({ host: 'localhost', port: 6379, client: redisClient, ttl: 260 }),
+  /* eslint-enable new-cap */
   saveUninitialized: true,
   resave: true
 }))
