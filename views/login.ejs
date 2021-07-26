@@ -15,8 +15,9 @@
         <input type="password" name="password" id="password" placeholder="password">
         <br>
         <input type="hidden" name="token" id="token" value="<%= token %>">
+        <iframe width="500px" height="330px" src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>&w=90&h=50" scrolling="no" frameborder="0"></iframe>
+        <br>
         <input type="submit" value="login">
     </form>
-    <iframe width="720px" height="600px" src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>" scrolling="no" frameborder="0"></iframe>
 </body>
 </html>
