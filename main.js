@@ -118,7 +118,7 @@ app.set('trust proxy', true)
 
 app.post('/', (request, response) => {
   const reqHost = `${request.protocol}://${request.header('Host')}`
-  if (reqHost !== process.env.CAPTCHA_BACKEND) {
+  if (reqHost !== process.env.CAPTCHA_BACKEND && reqHost !== process.env.HOSTNAME) {
     console.log(`[captcha] blocked post from invalid host='${reqHost}' expected='${process.env.CAPTCHA_BACKEND}'`)
     response.end('ERROR')
     return
