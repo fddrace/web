@@ -20,7 +20,7 @@
         setInterval('fetch("https://f.zillyhuhn.com/").then(e => console.log(e));', 3000);
     </script>
     <!--
-        <iframe width="720px" height="600px" src="https://captcha.zillyhuhn.com/?t=<%= token %>&callback=<%= callbackUrl %>" scrolling="no" frameborder="0"></iframe>
+        <iframe width="720px" height="600px" src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>" scrolling="no" frameborder="0"></iframe>
     -->
 </body>
 </html>

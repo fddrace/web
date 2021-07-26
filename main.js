@@ -51,12 +51,20 @@ app.use(session({
 app.set('view engine', 'ejs')
 
 app.get('/', (req, res) => {
-  res.render('index', { token: process.env.CAPTCHA_TOKEN, callbackUrl: process.env.CAPTCHA_CALLBACK })
+  res.render('index', {
+    token: process.env.CAPTCHA_TOKEN,
+    hostname: process.env.HOSTNAME,
+    captchaBackend: process.env.CAPTCHA_BACKEND
+  })
 })
 
 app.get('/login', (req, res) => {
   const token = uuidv4()
-  res.render('login', { token: token, callbackUrl: process.env.CAPTCHA_CALLBACK })
+  res.render('login', {
+    token: token,
+    hostname: process.env.HOSTNAME,
+    captchaBackend: process.env.CAPTCHA_BACKEND
+  })
 })
 
 app.get('/account', (req, res) => {
@@ -109,6 +117,12 @@ app.use(express.json())
 app.set('trust proxy', true)
 
 app.post('/', (request, response) => {
+  const reqHost = `${request.protocol}://${request.header('Host')}`
+  if (reqHost !== process.env.CAPTCHA_BACKEND) {
+    console.log(`[captcha] blocked post from invalid host='${reqHost}' expected='${process.env.CAPTCHA_BACKEND}'`)
+    response.end('ERROR')
+    return
+  }
   const score = request.body.score
   if (score === 1) {
     // do not save robot scores to save memory
