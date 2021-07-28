@@ -78,6 +78,20 @@ const loginAccount = async (username, password) => {
   }
 }
 
+const getAllAccFiles = () => {
+  return fs.readdirSync(process.env.FDDR_ACCOUNTS_PATH, { withFileTypes: true })
+    .filter(dirent => dirent.name.endsWith('.acc'))
+    .map(dirent => dirent.name)
+}
+
+const getAccsByEmail = email => {
+  return getAllAccFiles().map(accFile => {
+    return parseAccData(fs.readFileSync(`${process.env.FDDR_ACCOUNTS_PATH}/${accFile}`, 'UTF-8')
+      .split(/\r?\n/))
+  }).filter(data => data.contact && data.contact.toLowerCase() === email)
+}
+
 module.exports = {
-  loginAccount
+  loginAccount,
+  getAccsByEmail
 }

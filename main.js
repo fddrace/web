@@ -9,7 +9,7 @@ const redisClient = redis.createClient()
 dotenv.config()
 
 const { sendMail } = require('./src/mail')
-const { loginAccount } = require('./src/account')
+const { loginAccount, getAccsByEmail } = require('./src/account')
 
 const port = 5690
 
@@ -108,29 +108,70 @@ app.post('/login', async (req, res) => {
   }
 })
 
-app.get('/reset-token', (req, res) => {
-  const { token } = req.query
+app.post('/new-password', (req, res) => {
+  const { password, password2, token } = req.body
+  if (password !== password2) {
+    res.end('Passwords do not match')
+    return
+  }
+  if (typeof token !== 'string') {
+    res.end('Invalid token.')
+    return
+  }
+  console.log(`redisClient get token='${token}'`)
   redisClient.get(token, (err, reply) => {
     if (err || reply === null) {
-      res.end('invalid token')
+      res.end('Invalid token.')
       return
     }
 
     console.log(reply)
-    res.end(reply)
+    const data = JSON.parse(reply)
+    console.log(data)
+    // TODO: check data.expire
+    // TODO: set new password via econ
+    res.end(JSON.stringify(data))
+  })
+})
+
+app.get('/new-password', (req, res) => {
+  const { token } = req.query
+  redisClient.get(token, (err, reply) => {
+    if (err || reply === null) {
+      res.end('Invalid token.')
+      return
+    }
+
+    console.log(reply)
+    res.render('new-password', { username: JSON.parse(reply).username, token: token })
   })
 })
 
 app.post('/reset', (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html' })
-  res.end('<html>OK</html>')
   const token = uuidv4()
-  redisClient.set(token, JSON.stringify({ userId: 'ChillerDragon', expire: '11-11-2022' }), (err, reply) => {
+  if (!req.body.email || req.body.email === '') {
+    res.end('Invalid mail.')
+    return
+  }
+  const email = req.body.email.trim().toLowerCase()
+  const acc = getAccsByEmail(email)[0]
+  if (!acc) {
+    // keep same message here as in happy path
+    // to not leak emails
+    res.end('Check your mail.')
+    return
+  }
+  const today = new Date()
+  const expireDate = new Date(today.getFullYear(), today.getMonth(), today.getDay() + 3).toISOString().split('T')[0]
+  const username = acc.username
+  redisClient.set(token, JSON.stringify({ username: username, expire: expireDate }), (err, reply) => {
     if (err) throw err
 
-    console.log(`[password-reset] redis response: ${reply}`)
+    console.log(`[password-reset] email='${email}' username='${username}' redis response: ${reply}`)
   })
-  sendMail(req.body.email, token)
+  sendMail(email, token)
+  res.end('Check your mail.')
 })
 
 app.use(express.json())

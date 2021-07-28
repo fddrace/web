@@ -17,8 +17,8 @@ const sendMail = (toAddr, token) => {
     from: '"Chiller Dragon" <chillerdragon@zillyhuhn.com>',
     to: toAddr,
     subject: 'F-DDrace password reset',
-    text: `Click here to reset your password: https://f.zillyhuhn.com/userId/${token}`,
-    html: `Click here to reset your password: https://f.zillyhuhn.com/userId/${token}`
+    text: `Click here to reset your password: ${process.env.HOSTNAME}new-password/?token=${token}`,
+    html: `Click here to reset your password: ${process.env.HOSTNAME}new-password/?token=${token}`
   }
 
   transporter.sendMail(mailOptions, (error, info) => {
