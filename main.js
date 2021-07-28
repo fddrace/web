@@ -91,51 +91,70 @@ app.get('/logout', (req, res) => {
   })
 })
 
-app.post('/login', async (request, response) => {
-  response.writeHead(200, { 'Content-Type': 'text/html' })
-  if (captchaData[request.body.token] !== 1) {
-    response.end('<html>Failed to login. Are you a robot?<a href="login">back</a></html>')
+app.post('/login', async (req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html' })
+  if (captchaData[req.body.token] !== 1) {
+    res.end('<html>Failed to login. Are you a robot?<a href="login">back</a></html>')
     return
   }
   // tokens are one use only
-  delete captchaData[request.body.token]
-  const loggedIn = await loginAccount(request.body.username, request.body.password)
+  delete captchaData[req.body.token]
+  const loggedIn = await loginAccount(req.body.username, req.body.password)
   if (loggedIn) {
-    request.session.data = loggedIn
-    response.end('<html>Sucessfully logged in. <a href="account">ok</a></html>')
+    req.session.data = loggedIn
+    res.end('<html>Sucessfully logged in. <a href="account">ok</a></html>')
   } else {
-    response.end('<html>Failed to login. <a href="login">back</a></html>')
+    res.end('<html>Failed to login. <a href="login">back</a></html>')
   }
 })
 
-app.post('/reset', (request, response) => {
-  response.writeHead(200, { 'Content-Type': 'text/html' })
-  response.end('<html>OK</html>')
-  sendMail(request.body.email)
+app.get('/reset-token', (req, res) => {
+  const { token } = req.query
+  redisClient.get(token, (err, reply) => {
+    if (err || reply === null) {
+      res.end('invalid token')
+      return
+    }
+
+    console.log(reply)
+    res.end(reply)
+  })
+})
+
+app.post('/reset', (req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html' })
+  res.end('<html>OK</html>')
+  const token = uuidv4()
+  redisClient.set(token, JSON.stringify({ userId: 'ChillerDragon', expire: '11-11-2022' }), (err, reply) => {
+    if (err) throw err
+
+    console.log(`[password-reset] redis response: ${reply}`)
+  })
+  sendMail(req.body.email, token)
 })
 
 app.use(express.json())
 
 app.set('trust proxy', true)
 
-app.post('/', (request, response) => {
-  const reqHost = `${request.protocol}://${request.header('Host')}`
-  const reqAddr = request.headers['x-forwarded-for'] || request.socket.remoteAddress
+app.post('/', (req, res) => {
+  const reqHost = `${req.protocol}://${req.header('Host')}`
+  const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
   const isOwnAddr = reqAddr === process.env.IP_ADDR
   if (reqHost !== process.env.CAPTCHA_BACKEND && !isOwnAddr) {
     console.log(`[captcha] blocked post from invalid host='${reqHost}' addr='${reqAddr}' expected='${process.env.CAPTCHA_BACKEND}'`)
-    response.end('ERROR')
+    res.end('ERROR')
     return
   }
-  const score = request.body.score
+  const score = req.body.score
   if (score === 1) {
     // do not save robot scores to save memory
-    captchaData[request.body.token] = score
-    console.log(`[captcha] result=hooman ip=${request.ip}`)
+    captchaData[req.body.token] = score
+    console.log(`[captcha] result=hooman ip=${req.ip}`)
   } else {
-    console.log(`[captcha] result=robot ip=${request.ip}`)
+    console.log(`[captcha] result=robot ip=${req.ip}`)
   }
-  response.end('OK')
+  res.end('OK')
 })
 
 app.listen(port, () => {

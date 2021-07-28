@@ -12,13 +12,13 @@ const transporter = nodemailer.createTransport({
   }
 })
 
-const sendMail = toAddr => {
+const sendMail = (toAddr, token) => {
   const mailOptions = {
     from: '"Chiller Dragon" <chillerdragon@zillyhuhn.com>',
     to: toAddr,
     subject: 'F-DDrace password reset',
-    text: 'Click here to reset your password: https://f.zillyhuhn.com',
-    html: 'Click here to reset your password: https://f.zillyhuhn.com'
+    text: `Click here to reset your password: https://f.zillyhuhn.com/userId/${token}`,
+    html: `Click here to reset your password: https://f.zillyhuhn.com/userId/${token}`
   }
 
   transporter.sendMail(mailOptions, (error, info) => {
