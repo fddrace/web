@@ -1,0 +1,7 @@
+.message-green {
+    border: 2px solid green;
+    border-radius: 4px;
+    padding: 10px;
+    background-color: rgb(10, 175, 10);
+    color: white;
+}

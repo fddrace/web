@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
   }
 })
 
-const sendMail = (toAddr, token) => {
+const sendMailPassword = (toAddr, token) => {
   const mailOptions = {
     from: '"Chiller Dragon" <chillerdragon@zillyhuhn.com>',
     to: toAddr,
@@ -29,6 +29,24 @@ const sendMail = (toAddr, token) => {
   })
 }
 
+const sendMailVerify = (toAddr, token) => {
+  const mailOptions = {
+    from: '"Chiller Dragon" <chillerdragon@zillyhuhn.com>',
+    to: toAddr,
+    subject: 'F-DDrace verify email',
+    text: `Click here to verify your email: ${process.env.HOSTNAME}verify-email/?token=${token}`,
+    html: `Click here to verify your email: ${process.env.HOSTNAME}verify-email/?token=${token}`
+  }
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return console.log(error)
+    }
+    console.log('Message sent: %s', info.messageId)
+  })
+}
+
 module.exports = {
-  sendMail
+  sendMailPassword,
+  sendMailVerify
 }

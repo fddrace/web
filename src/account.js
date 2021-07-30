@@ -55,13 +55,16 @@ const parseAccData = data => {
 }
 
 const loginAccount = async (username, password) => {
+  /* use null as password to force passwordless login */
   const ACC_PASSWORD = 3
   const accFile = `${process.env.FDDR_ACCOUNTS_PATH}/${username}.acc`
-  if (password === undefined || password === '') {
-    return false
-  }
-  if (password.length < 3) {
-    return false
+  if (password !== null) {
+    if (password === undefined || password === '') {
+      return false
+    }
+    if (password.length < 3) {
+      return false
+    }
   }
   if (!fs.existsSync(accFile)) {
     return false
@@ -69,7 +72,7 @@ const loginAccount = async (username, password) => {
   try {
     const data = fs.readFileSync(accFile, 'UTF-8')
     const lines = data.split(/\r?\n/)
-    if (password === lines[ACC_PASSWORD]) {
+    if (password === lines[ACC_PASSWORD] || password === null) {
       return parseAccData(lines)
     }
   } catch (err) {

@@ -8,7 +8,7 @@ const redisStore = require('connect-redis')(session)
 const redisClient = redis.createClient()
 dotenv.config()
 
-const { sendMail } = require('./src/mail')
+const { sendMailPassword, sendMailVerify } = require('./src/mail')
 const { loginAccount, getAccsByEmail } = require('./src/account')
 const { execCmd } = require('./src/api')
 
@@ -40,6 +40,7 @@ app.use(
   })
 )
 
+const isCaptcha = process.env.CAPTCHA_BACKEND && process.env.CAPTCHA_BACKEND !== ''
 const captchaData = {}
 
 app.use(session({
@@ -65,6 +66,7 @@ app.get('/login', (req, res) => {
   const token = uuidv4()
   res.render('login', {
     token: token,
+    isCaptcha: isCaptcha,
     hostname: process.env.HOSTNAME,
     captchaBackend: process.env.CAPTCHA_BACKEND
   })
@@ -72,10 +74,63 @@ app.get('/login', (req, res) => {
 
 app.get('/account', (req, res) => {
   if (req.session.data) {
-    res.render('account', { data: req.session.data })
+    res.render('account', { data: req.session.data, messageGreen: false })
   } else {
     res.redirect('/login')
   }
+})
+
+app.post('/account', (req, res) => {
+  if (!req.session.data || !req.session.data.username || req.session.data.username === '') {
+    res.redirect('/login')
+    return
+  }
+  res.writeHead(200, { 'Content-Type': 'text/html' })
+  const token = uuidv4()
+  if (!req.body.email || req.body.email === '') {
+    res.end('Invalid mail.')
+    return
+  }
+  const username = req.session.data.username
+  const email = req.body.email.trim().toLowerCase()
+  const today = new Date()
+  const expireDate = new Date(today.getFullYear(), today.getMonth(), today.getDay() + 3).toISOString().split('T')[0]
+  redisClient.set(token, JSON.stringify({ username: username, email: email, expire: expireDate }), (err, reply) => {
+    if (err) throw err
+
+    console.log(`[email update] email='${email}' username='${username}' redis response: ${reply}`)
+  })
+  sendMailVerify(email, token)
+  res.end('Check your mail.')
+})
+
+app.get('/verify-email', async (req, res) => {
+  const { token } = req.query
+  redisClient.get(token, async (err, reply) => {
+    if (err || reply === null) {
+      res.end('Invalid token.')
+      return
+    }
+
+    console.log(reply)
+    const data = JSON.parse(reply)
+    // TODO: check expire date and delete token
+    const username = data.username
+    const email = data.email
+    if (!username || !email) {
+      res.end('Something went wrong.')
+      return
+    }
+    const loggedIn = await loginAccount(username, null)
+    if (!loggedIn) {
+      res.end('Something went horribly wrong')
+      return
+    }
+    execCmd('econ', `acc_edit ${username} contact "${email}"`)
+    req.session.data = loggedIn
+    req.session.data.email = email
+    res.render('account', { messageGreen: 'E-Mail verified', data: req.session.data })
+  })
 })
 
 app.get('/reset', (req, res) => {
@@ -94,9 +149,11 @@ app.get('/logout', (req, res) => {
 
 app.post('/login', async (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html' })
-  if (captchaData[req.body.token] !== 1) {
-    res.end('<html>Failed to login. Are you a robot?<a href="login">back</a></html>')
-    return
+  if (isCaptcha) {
+    if (captchaData[req.body.token] !== 1) {
+      res.end('<html>Failed to login. Are you a robot?<a href="login">back</a></html>')
+      return
+    }
   }
   // tokens are one use only
   delete captchaData[req.body.token]
@@ -171,7 +228,7 @@ app.post('/reset', (req, res) => {
 
     console.log(`[password-reset] email='${email}' username='${username}' redis response: ${reply}`)
   })
-  sendMail(email, token)
+  sendMailPassword(email, token)
   res.end('Check your mail.')
 })
 
@@ -198,6 +255,8 @@ app.post('/', (req, res) => {
   }
   res.end('OK')
 })
+
+app.use(express.static('static'))
 
 app.listen(port, () => {
   console.log(`App running on http://localhost:${port}.`)
