@@ -65,6 +65,7 @@ app.get('/', (req, res) => {
 app.get('/login', (req, res) => {
   const token = uuidv4()
   res.render('login', {
+    messageGreen: req.query.password === 'success' ? 'Password reset successfully' : false,
     token: token,
     isCaptcha: isCaptcha,
     hostname: process.env.HOSTNAME,
@@ -74,7 +75,7 @@ app.get('/login', (req, res) => {
 
 app.get('/account', (req, res) => {
   if (req.session.data) {
-    res.render('account', { data: req.session.data, messageGreen: false })
+    res.render('account', { data: req.session.data, messageGreen: req.query.mail === 'success' ? 'E-Mail verified' : false })
   } else {
     res.redirect('/login')
   }
@@ -93,9 +94,9 @@ app.post('/account', (req, res) => {
   }
   const username = req.session.data.username
   const email = req.body.email.trim().toLowerCase()
-  const today = new Date()
-  const expireDate = new Date(today.getFullYear(), today.getMonth(), today.getDay() + 3).toISOString().split('T')[0]
-  redisClient.set(token, JSON.stringify({ username: username, email: email, expire: expireDate }), (err, reply) => {
+  const expireDate = new Date()
+  expireDate.setTime(expireDate.getTime() + 3 * 86400000)
+  redisClient.set(token, JSON.stringify({ username: username, email: email, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
     if (err) throw err
 
     console.log(`[email update] email='${email}' username='${username}' redis response: ${reply}`)
@@ -114,7 +115,18 @@ app.get('/verify-email', async (req, res) => {
 
     console.log(reply)
     const data = JSON.parse(reply)
-    // TODO: check expire date and delete token
+    const today = new Date().toISOString().split('T')[0]
+    if (data.expire <= today) {
+      redisClient.del(token, (err, reply) => {
+        if (err) throw err
+
+        console.log(reply)
+      })
+      console.log(`[verify-email] Error: expired token username=${data.username} expire=${data.expire} today=${today}`)
+      res.end('Expired token')
+      return
+    }
+
     const username = data.username
     const email = data.email
     if (!username || !email) {
@@ -129,7 +141,12 @@ app.get('/verify-email', async (req, res) => {
     execCmd('econ', `acc_edit ${username} contact "${email}"`)
     req.session.data = loggedIn
     req.session.data.email = email
-    res.render('account', { messageGreen: 'E-Mail verified', data: req.session.data })
+    redisClient.del(token, (err, reply) => {
+      if (err) throw err
+
+      console.log(reply)
+    })
+    res.redirect('/account?mail=success')
   })
 })
 
@@ -183,12 +200,26 @@ app.post('/new-password', (req, res) => {
       return
     }
 
-    console.log(reply)
     const data = JSON.parse(reply)
     console.log(data)
-    // TODO: check data.expire
+    const today = new Date().toISOString().split('T')[0]
+    if (data.expire <= today) {
+      redisClient.del(token, (err, reply) => {
+        if (err) throw err
+
+        console.log(reply)
+      })
+      console.log(`[password-reset] Error: expired token username=${data.username} expire=${data.expire} today=${today}`)
+      res.end('Expired token')
+      return
+    }
     execCmd('econ', `acc_edit ${data.username} password "${password}"`)
-    res.end(JSON.stringify(data))
+    redisClient.del(token, (err, reply) => {
+      if (err) throw err
+
+      console.log(reply)
+    })
+    res.redirect('/login?password=success')
   })
 })
 
@@ -220,10 +251,10 @@ app.post('/reset', (req, res) => {
     res.end('Check your mail.')
     return
   }
-  const today = new Date()
-  const expireDate = new Date(today.getFullYear(), today.getMonth(), today.getDay() + 3).toISOString().split('T')[0]
+  const expireDate = new Date()
+  expireDate.setTime(expireDate.getTime() + 3 * 86400000)
   const username = acc.username
-  redisClient.set(token, JSON.stringify({ username: username, expire: expireDate }), (err, reply) => {
+  redisClient.set(token, JSON.stringify({ username: username, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
     if (err) throw err
 
     console.log(`[password-reset] email='${email}' username='${username}' redis response: ${reply}`)
