@@ -10,6 +10,7 @@ dotenv.config()
 
 const { sendMail } = require('./src/mail')
 const { loginAccount, getAccsByEmail } = require('./src/account')
+const { execCmd } = require('./src/api')
 
 const port = 5690
 
@@ -129,7 +130,7 @@ app.post('/new-password', (req, res) => {
     const data = JSON.parse(reply)
     console.log(data)
     // TODO: check data.expire
-    // TODO: set new password via econ
+    execCmd('econ', `acc_edit ${data.username} password "${password}"`)
     res.end(JSON.stringify(data))
   })
 })
