@@ -8,5 +8,5 @@ Requires a running redis-server and tee-captcha instance
 
 ```
 npm install
-node main.js
+node fddrace-web.js
 ```
