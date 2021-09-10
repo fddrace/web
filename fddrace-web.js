@@ -88,21 +88,33 @@ app.post('/account', (req, res) => {
   }
   res.writeHead(200, { 'Content-Type': 'text/html' })
   const token = uuidv4()
-  if (!req.body.email || req.body.email === '') {
+  if (!req.body.email || req.body.email === '' || !req.body.email.match(/^[a-zA-Z0-9.\-@]+$/)) {
     res.end('Invalid mail.')
     return
   }
-  const username = req.session.data.username
-  const email = req.body.email.trim().toLowerCase()
-  const expireDate = new Date()
-  expireDate.setTime(expireDate.getTime() + 3 * 86400000)
-  redisClient.set(token, JSON.stringify({ username: username, email: email, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
-    if (err) throw err
 
-    console.log(`[email update] email='${email}' username='${username}' redis response: ${reply}`)
+  const email = req.body.email.trim().toLowerCase()
+  redisClient.get(email, (err, reply) => {
+    if (err) throw err
+    if (reply !== null) {
+      const today = new Date().toISOString().split('T')[0]
+      if (reply > today) {
+        console.log(`[email-update] Error: email ratelimit email=${email} expire=${reply} today=${today}`)
+        res.end('Email already pending. Try again later.')
+        return
+      }
+    }
+    const username = req.session.data.username
+    const expireDate = new Date()
+    expireDate.setTime(expireDate.getTime() + 3 * 86400000)
+    redisClient.set(token, JSON.stringify({ username: username, email: email, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
+      if (err) throw err
+
+      console.log(`[email-update] email='${email}' username='${username}' redis response: ${reply}`)
+    })
+    sendMailVerify(email, token)
+    res.end('Check your mail.')
   })
-  sendMailVerify(email, token)
-  res.end('Check your mail.')
 })
 
 app.get('/verify-email', async (req, res) => {
@@ -239,7 +251,7 @@ app.get('/new-password', (req, res) => {
 app.post('/reset', (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html' })
   const token = uuidv4()
-  if (!req.body.email || req.body.email === '') {
+  if (!req.body.email || req.body.email === '' || !req.body.email.match(/^[a-zA-Z0-9.\-@]+$/)) {
     res.end('Invalid mail.')
     return
   }
@@ -251,16 +263,32 @@ app.post('/reset', (req, res) => {
     res.end('Check your mail.')
     return
   }
-  const expireDate = new Date()
-  expireDate.setTime(expireDate.getTime() + 3 * 86400000)
-  const username = acc.username
-  redisClient.set(token, JSON.stringify({ username: username, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
+  redisClient.get(email, (err, reply) => {
     if (err) throw err
+    if (reply !== null) {
+      const today = new Date().toISOString().split('T')[0]
+      if (reply > today) {
+        console.log(`[password-reset] Error: email ratelimit email=${email} expire=${reply} today=${today}`)
+        res.end('Password reset already pending. Try again later.')
+        return
+      }
+    }
+    const expireDate = new Date()
+    expireDate.setTime(expireDate.getTime() + 3 * 86400000)
+    const username = acc.username
+    redisClient.set(token, JSON.stringify({ username: username, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
+      if (err) throw err
 
-    console.log(`[password-reset] email='${email}' username='${username}' redis response: ${reply}`)
+      console.log(`[password-reset] token email='${email}' username='${username}' redis response: ${reply}`)
+    })
+    redisClient.set(email, expireDate.toISOString().split('T')[0], (err, reply) => {
+      if (err) throw err
+
+      console.log(`[password-reset] email email='${email}' username='${username}' redis response: ${reply}`)
+    })
+    sendMailPassword(email, token)
+    res.end('Check your mail.')
   })
-  sendMailPassword(email, token)
-  res.end('Check your mail.')
 })
 
 app.use(express.json())
