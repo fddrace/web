@@ -187,7 +187,9 @@ app.post('/login', async (req, res) => {
   // tokens are one use only
   delete captchaData[req.body.token]
   const loggedIn = await loginAccount(req.body.username, req.body.password)
-  if (loggedIn) {
+  if (typeof loggedIn === 'string' || loggedIn instanceof String) {
+    res.end(`<html>${loggedIn} <a href="login">back</a></html>`)
+  } else if (loggedIn) {
     req.session.data = loggedIn
     res.end('<html>Sucessfully logged in. <a href="account">ok</a></html>')
   } else {

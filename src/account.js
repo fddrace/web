@@ -58,6 +58,7 @@ const parseAccData = data => {
 const loginAccount = async (username, password) => {
   /* use null as password to force passwordless login */
   const ACC_PASSWORD = 3
+  const ACC_VERSION = 37
   const accFile = `${process.env.FDDR_ACCOUNTS_PATH}/${username}.acc`
   if (password !== null) {
     if (password === undefined || password === '') {
@@ -74,6 +75,9 @@ const loginAccount = async (username, password) => {
   try {
     const data = fs.readFileSync(accFile, 'UTF-8')
     const lines = data.split(/\r?\n/)
+    if (password !== null && lines[ACC_VERSION] <= 6) {
+      return 'Your account is too old please login in game first to update.'
+    }
     if (password256 === lines[ACC_PASSWORD] || password === null) {
       return parseAccData(lines)
     }
