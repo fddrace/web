@@ -89,18 +89,23 @@ app.post('/account', (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html' })
   const token = uuidv4()
   if (!req.body.email || req.body.email === '' || !req.body.email.match(/^[a-zA-Z0-9.\-@]+$/)) {
-    res.end('Invalid mail.')
+    res.end('<html>Invalid mail.<a href="account">back</a></html>')
     return
   }
 
   const email = req.body.email.trim().toLowerCase()
+  const acc = getAccsByEmail(email)[0]
+  if (acc) {
+    res.end('<html>Email already in use.<a href="account">back</a></html>')
+    return
+  }
   redisClient.get(email, (err, reply) => {
     if (err) throw err
     if (reply !== null) {
       const today = new Date().toISOString().split('T')[0]
       if (reply > today) {
         console.log(`[email-update] Error: email ratelimit email=${email} expire=${reply} today=${today}`)
-        res.end('Email already pending. Try again later.')
+        res.end('<html>Email already pending. Try again later.<a href="account">back</a></html>')
         return
       }
     }
@@ -113,7 +118,7 @@ app.post('/account', (req, res) => {
       console.log(`[email-update] email='${email}' username='${username}' redis response: ${reply}`)
     })
     sendMailVerify(email, token)
-    res.end('Check your mail.')
+    res.end('<html>Check your mail.<a href="account">back</a></html>')
   })
 })
 
@@ -254,7 +259,7 @@ app.post('/reset', (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html' })
   const token = uuidv4()
   if (!req.body.email || req.body.email === '' || !req.body.email.match(/^[a-zA-Z0-9.\-@]+$/)) {
-    res.end('Invalid mail.')
+    res.end('<html>Invalid mail.<a href="reset">back</a></html>')
     return
   }
   const email = req.body.email.trim().toLowerCase()
@@ -262,7 +267,8 @@ app.post('/reset', (req, res) => {
   if (!acc) {
     // keep same message here as in happy path
     // to not leak emails
-    res.end('Check your mail.')
+    // but tbh when setting the email it shows a error if others already use it so ye...
+    res.end('<html>Check your mail.<a href="reset">back</a></html>')
     return
   }
   redisClient.get(email, (err, reply) => {
@@ -271,7 +277,7 @@ app.post('/reset', (req, res) => {
       const today = new Date().toISOString().split('T')[0]
       if (reply > today) {
         console.log(`[password-reset] Error: email ratelimit email=${email} expire=${reply} today=${today}`)
-        res.end('Password reset already pending. Try again later.')
+        res.end('<html>Password reset already pending. Try again later.<a href="reset">back</a></html>')
         return
       }
     }
@@ -289,7 +295,7 @@ app.post('/reset', (req, res) => {
       console.log(`[password-reset] email email='${email}' username='${username}' redis response: ${reply}`)
     })
     sendMailPassword(email, token)
-    res.end('Check your mail.')
+    res.end('<html>Check your mail.<a href="reset">back</a></html>')
   })
 })
 

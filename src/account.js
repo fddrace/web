@@ -71,7 +71,7 @@ const loginAccount = async (username, password) => {
   if (!fs.existsSync(accFile)) {
     return false
   }
-  const password256 = crypto.createHash('sha256').update(password).digest('hex')
+  const password256 = password ? crypto.createHash('sha256').update(password).digest('hex') : ''
   try {
     const data = fs.readFileSync(accFile, 'UTF-8')
     const lines = data.split(/\r?\n/)
