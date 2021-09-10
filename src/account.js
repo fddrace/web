@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs')
+const crypto = require('crypto')
 
 const parseAccData = data => {
   let i = 0
@@ -69,10 +70,11 @@ const loginAccount = async (username, password) => {
   if (!fs.existsSync(accFile)) {
     return false
   }
+  const password256 = crypto.createHash('sha256').update(password).digest('hex')
   try {
     const data = fs.readFileSync(accFile, 'UTF-8')
     const lines = data.split(/\r?\n/)
-    if (password === lines[ACC_PASSWORD] || password === null) {
+    if (password256 === lines[ACC_PASSWORD] || password === null) {
       return parseAccData(lines)
     }
   } catch (err) {
