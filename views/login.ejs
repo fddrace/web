@@ -18,6 +18,11 @@
         <label for="password">Password:</label>
         <input type="password" name="password" id="password" placeholder="password">
         <br>
+        <% if (process.env.ALPHA_TOKEN) { %>
+            <label for="alphatoken">Alpha token:</label>
+            <input type="password" name="alphatoken" id="alphatoken" placeholder="Alpha token">
+            <br>
+        <% } %>
         <input type="hidden" name="token" id="token" value="<%= token %>">
         <% if (isCaptcha) { %>
             <iframe width="500px" height="330px" src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>&w=90&h=50" scrolling="no" frameborder="0"></iframe>

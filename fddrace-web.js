@@ -197,6 +197,10 @@ app.post('/login', async (req, res) => {
       return
     }
   }
+  if (process.env.ALPHA_TOKEN && req.body.alphatoken !== process.env.ALPHA_TOKEN) {
+    res.end('<html>Failed to login. Invalid alpha token.<a href="login">back</a></html>')
+    return
+  }
   // tokens are one use only
   delete captchaData[req.body.token]
   const loggedIn = await loginAccount(req.body.username, req.body.password)
