@@ -92,6 +92,14 @@ app.post('/account', (req, res) => {
     res.end('<html>Invalid mail.<a href="account">back</a></html>')
     return
   }
+  if (!req.session.data.security_pin.match(/[0-9]+/)) {
+    res.end('<html>Please set a pin. Check /pin in game<a href="account">back</a></html>')
+    return
+  }
+  if (req.body.pin !== req.session.data.security_pin) {
+    res.end('<html>Invalid pin. Check /pin in game<a href="account">back</a></html>')
+    return
+  }
 
   const email = req.body.email.trim().toLowerCase()
   const acc = getAccsByEmail(email)[0]
