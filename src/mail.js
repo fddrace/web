@@ -7,14 +7,14 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false, // true for 465, false for other ports
   auth: {
-    user: 'chillerdragon',
+    user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD
   }
 })
 
 const sendMailPassword = (toAddr, token) => {
   const mailOptions = {
-    from: '"Chiller Dragon" <chillerdragon@zillyhuhn.com>',
+    from: process.env.EMAIL_FROM_HEADER,
     to: toAddr,
     subject: 'F-DDrace password reset',
     text: `Click here to reset your password: ${process.env.HOSTNAME}new-password/?token=${token}`,
@@ -31,7 +31,7 @@ const sendMailPassword = (toAddr, token) => {
 
 const sendMailVerify = (toAddr, token) => {
   const mailOptions = {
-    from: '"Chiller Dragon" <chillerdragon@zillyhuhn.com>',
+    from: process.env.EMAIL_FROM_HEADER,
     to: toAddr,
     subject: 'F-DDrace verify email',
     text: `Click here to verify your email: ${process.env.HOSTNAME}verify-email/?token=${token}`,
