@@ -51,7 +51,9 @@ const parseAccData = data => {
     timeout_code: data[i++],
     security_pin: data[i++],
     register_date: data[i++],
-    last_login_date: data[i++]
+    last_login_date: data[i++],
+    flags: data[i++],
+    email: data[i++]
   }
 }
 
@@ -97,7 +99,7 @@ const getAccsByEmail = email => {
   return getAllAccFiles().map(accFile => {
     return parseAccData(fs.readFileSync(`${process.env.FDDR_ACCOUNTS_PATH}/${accFile}`, 'UTF-8')
       .split(/\r?\n/))
-  }).filter(data => data.contact && data.contact.toLowerCase() === email)
+  }).filter(data => data.email && data.email.toLowerCase() === email)
 }
 
 module.exports = {

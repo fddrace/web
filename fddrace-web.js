@@ -163,7 +163,7 @@ app.get('/verify-email', async (req, res) => {
       res.end('Something went horribly wrong')
       return
     }
-    execCmd('econ', `acc_edit ${username} contact "${email}"`)
+    execCmd('econ', `acc_edit ${username} email "${email}"`)
     req.session.data = loggedIn
     req.session.data.email = email
     redisClient.del(token, (err, reply) => {
