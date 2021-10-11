@@ -277,6 +277,25 @@ app.get('/survey', (req, res) => {
   res.render('survey')
 })
 
+app.get('/survey_result', (req, res) => {
+  const questions = []
+  for (let i = 0; i < 2; i++) {
+    getDb().get(`
+      SELECT question${i}, COUNT(question${i}) AS c
+      FROM Answers
+      GROUP BY question${i}
+      ORDER BY c;
+    `, (err, rows) => {
+      if (err) {
+        throw err
+      }
+      console.log(rows)
+      questions.push(rows)
+    })
+  }
+  res.render('survey_result', { questions: questions })
+})
+
 app.post('/survey', async (req, res) => {
   if (!req.session.data) {
     res.redirect('/login')

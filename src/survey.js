@@ -31,12 +31,6 @@ const insertSurvey = (username, answers) => {
 
 const getDb = () => db
 
-const hasVoted = async (username) => {
-  const res = await db.get('SELECT * FROM Answers WHERE username = ?', username)
-  res
-  return res.length !== 0
-}
-
 module.exports = {
   insertSurvey,
   hasVoted,
