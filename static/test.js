@@ -9,7 +9,11 @@ const fillComplete = (players) => {
 }
 
 input.addEventListener('keyup', event => {
-  fetch(`/api/players/${input.value}`)
+  if (!input.value || input.value === '') {
+    autocomplete.innerHTML = ''
+    return
+  }
+  fetch(`/api/players/${encodeURIComponent(input.value)}`)
     .then(data => data.json())
     .then(data => fillComplete(data))
 })

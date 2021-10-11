@@ -355,7 +355,7 @@ app.post('/', (req, res) => {
   200   unsorted_also_works
 */
 app.get('/api/players/:player', (req, res) => {
-  const { player } = req.params
+  const player = decodeURIComponent(req.params.player)
   const players = []
   if (!process.env.PLAYER_NAMES_PATH) {
     return []
