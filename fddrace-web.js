@@ -363,11 +363,11 @@ app.get('/api/players/:player', (req, res) => {
     .split(/\r?\n/)
     .filter(data => data.toLowerCase().includes(player.toLowerCase()))
     .forEach(line => {
-      const data = line.split(' ')
+      const data = line.trim().split(' ')
       players.push([parseInt(data[0], 10), data.slice(1).join(' ').trim()])
     })
   players.sort((p1, p2) => p2[0] - p1[0])
-  res.send(JSON.stringify(players.map(player => player[1])))
+  res.send(JSON.stringify(players.map(player => player[1]).slice(0, 10)))
 })
 
 app.use(express.static('static'))
