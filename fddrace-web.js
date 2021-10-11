@@ -12,6 +12,7 @@ dotenv.config()
 const { sendMailPassword, sendMailVerify } = require('./src/mail')
 const { loginAccount, getAccsByEmail } = require('./src/account')
 const { execCmd } = require('./src/api')
+const { hasVoted, insertSurvey, getDb } = require('./src/survey')
 
 const port = 5690
 
@@ -276,7 +277,7 @@ app.get('/survey', (req, res) => {
   res.render('survey')
 })
 
-app.post('/survey', (req, res) => {
+app.post('/survey', async (req, res) => {
   if (!req.session.data) {
     res.redirect('/login')
     return
@@ -285,9 +286,21 @@ app.post('/survey', (req, res) => {
     res.end('<html>You have to be at least level 10 to take part in the survey.<a href="/">okay</a></html>')
     return
   }
-  console.log(req.body.question1)
-  console.log(req.body.question2)
-  res.end('<html>OK <a href="survey">back</a></html>')
+  getDb().get('SELECT * FROM Answers WHERE username = ?', req.session.data.username, (err, rows) => {
+    if (err) {
+      throw err
+    }
+    if (rows) {
+      res.end('<html>You already voted <a href="survey">back</a></html>')
+    }
+    else {
+      insertSurvey(
+        req.session.data.username,
+        [req.body.question1, req.body.question2]
+      )
+      res.end('<html>OK <a href="survey">back</a></html>')
+    }
+  })
 })
 
 app.post('/reset', (req, res) => {
