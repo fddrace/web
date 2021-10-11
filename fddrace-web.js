@@ -176,8 +176,8 @@ app.get('/verify-email', async (req, res) => {
   })
 })
 
-app.get('/reset', (req, res) => {
-  res.render('reset')
+app.get('/test', (req, res) => {
+  res.render('players')
 })
 
 app.get('/logout', (req, res) => {
