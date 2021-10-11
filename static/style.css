@@ -6,3 +6,15 @@
     color: white;
     margin: 5px;
 }
+
+.complete-entry {
+    list-style: none;
+    border: 2px solid rgb(124, 104, 104);
+    border-radius: 3px;
+    padding: 10px;
+    margin: 2px;
+}
+
+.complete-entry:hover {
+    background-color: rgb(137, 228, 152);
+}

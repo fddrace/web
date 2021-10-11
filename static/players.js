@@ -1,11 +1,16 @@
-const fillComplete = (players, completeList) => {
+const fillComplete = (players, completeList, input, completeIdentifier) => {
   if (!completeList) {
     return
   }
-  console.log(completeList)
   completeList.innerHTML = ''
   players.forEach(player => {
-    completeList.insertAdjacentHTML('beforeend', `<li>${player}</li>`)
+    completeList.insertAdjacentHTML('beforeend', `<li class="complete-entry ${completeIdentifier}">${player}</li>`)
+  })
+  document.querySelectorAll(`li.${completeIdentifier}`).forEach(li => {
+    li.addEventListener('click', event => {
+      input.value = li.innerText
+      completeList.innerHTML = ''
+    })
   })
 }
 
@@ -21,6 +26,6 @@ document.querySelectorAll('input.complete-players').forEach(input => {
     }
     fetch(`/api/players/${encodeURIComponent(input.value)}`)
       .then(data => data.json())
-      .then(data => fillComplete(data, completeList))
+      .then(data => fillComplete(data, completeList, input, autoClasses[0]))
   })
 })
