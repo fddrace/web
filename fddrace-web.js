@@ -176,10 +176,6 @@ app.get('/verify-email', async (req, res) => {
   })
 })
 
-app.get('/test', (req, res) => {
-  res.render('players')
-})
-
 app.get('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) {
@@ -268,8 +264,30 @@ app.get('/new-password', (req, res) => {
   })
 })
 
-app.get('/test', (req, res) => {
-  res.render('test')
+app.get('/survey', (req, res) => {
+  if (!req.session.data) {
+    res.redirect('/login')
+    return
+  }
+  if (req.session.data.level < 10) {
+    res.end('<html>You have to be at least level 10 to take part in the survey.<a href="/">okay</a></html>')
+    return
+  }
+  res.render('survey')
+})
+
+app.post('/survey', (req, res) => {
+  if (!req.session.data) {
+    res.redirect('/login')
+    return
+  }
+  if (req.session.data.level < 10) {
+    res.end('<html>You have to be at least level 10 to take part in the survey.<a href="/">okay</a></html>')
+    return
+  }
+  console.log(req.body.question1)
+  console.log(req.body.question2)
+  res.end('<html>OK <a href="survey">back</a></html>')
 })
 
 app.post('/reset', (req, res) => {
