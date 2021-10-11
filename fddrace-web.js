@@ -268,6 +268,10 @@ app.get('/new-password', (req, res) => {
   })
 })
 
+app.get('/test', (req, res) => {
+  res.render('test')
+})
+
 app.post('/reset', (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html' })
   const token = uuidv4()
