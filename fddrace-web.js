@@ -1,5 +1,6 @@
 const express = require('express')
 const session = require('express-session')
+const fs = require('fs')
 const redis = require('redis')
 const { v4: uuidv4 } = require('uuid')
 const app = express()
@@ -333,6 +334,40 @@ app.post('/', (req, res) => {
     console.log(`[captcha] result=robot ip=${req.ip}`)
   }
   res.end('OK')
+})
+
+/*
+  /players/:player
+
+  seves a text file like players.txt as an array
+  using the url parameter :player to search for entries
+  the file is expected to be in the unix 'sort -nr' format
+  the file does not have to be sorted
+  so the importance of the player followed by its name:
+
+  100   nameless tee
+  65    brainless tee
+  10    (1)nameless tee
+  200   unsorted_also_works
+*/
+app.get('/api/players/:player', (req, res) => {
+  const { player } = req.params
+  const players = []
+  if (!process.env.PLAYER_NAMES_PATH) {
+    return []
+  }
+  if (!fs.existsSync(process.env.PLAYER_NAMES_PATH)) {
+    return []
+  }
+  fs.readFileSync(process.env.PLAYER_NAMES_PATH, 'UTF-8')
+    .split(/\r?\n/)
+    .filter(data => data.toLowerCase().includes(player.toLowerCase()))
+    .forEach(line => {
+      const data = line.split(' ')
+      players.push([parseInt(data[0], 10), data.slice(1).join(' ').trim()])
+    })
+  players.sort((p1, p2) => p2[0] - p1[0])
+  res.send(JSON.stringify(players.map(player => player[1])))
 })
 
 app.use(express.static('static'))
