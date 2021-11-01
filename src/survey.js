@@ -33,6 +33,5 @@ const getDb = () => db
 
 module.exports = {
   insertSurvey,
-  hasVoted,
   getDb
 }
