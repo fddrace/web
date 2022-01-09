@@ -144,6 +144,7 @@ app.post('/account', (req, res) => {
           console.log(`[email-update] email='${email}' pin attempts=${emailData.pinAttempts} redis response: ${reply}`)
         })
         res.end('<html>Invalid pin. Check /pin in game<a href="account">back</a></html>')
+        return
       }
     }
     if (req.body.pin !== req.session.data.security_pin) {
