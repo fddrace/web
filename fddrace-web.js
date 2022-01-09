@@ -56,6 +56,15 @@ app.use(session({
 
 app.set('view engine', 'ejs')
 
+const sanitizeGmail = email => {
+  if (email.endsWith('gmail.com')) {
+    return email.toLowerCase().replace(/@gmail.com$/).replaceAll('.', '') + '@gmail.com'
+  } else if (email.endsWith('googlemail.com')) {
+    return email.toLowerCase().replace(/@googlemail.com$/).replaceAll('.', '') + '@googlemail.com'
+  }
+  return email
+}
+
 app.get('/', (req, res) => {
   res.render('index', {
     token: process.env.CAPTCHA_TOKEN,
@@ -99,7 +108,7 @@ app.post('/account', (req, res) => {
     return
   }
   const email = req.body.email.trim().toLowerCase()
-  redisClient.get(email, (err, reply) => {
+  redisClient.get(sanitizeGmail(email), (err, reply) => {
     if (err) throw err
     if (reply !== null) {
       const emailData = JSON.parse(reply)
@@ -123,13 +132,13 @@ app.post('/account', (req, res) => {
           const expireDate = new Date()
           expireDate.setTime(expireDate.getTime() + 1 * 86400000)
           emailData.pinExpire = expireDate.toISOString().split('T')[0]
-          redisClient.set(email, JSON.stringify(emailData), (err, reply) => {
+          redisClient.set(sanitizeGmail(email), JSON.stringify(emailData), (err, reply) => {
             if (err) throw err
 
             console.log(`[email-update] email='${email}' pin attempts=${emailData.pinAttempts} (banned) redis response: ${reply}`)
           })
         }
-        redisClient.set(email, JSON.stringify(emailData), (err, reply) => {
+        redisClient.set(sanitizeGmail(email), JSON.stringify(emailData), (err, reply) => {
           if (err) throw err
 
           console.log(`[email-update] email='${email}' pin attempts=${emailData.pinAttempts} redis response: ${reply}`)
@@ -139,7 +148,7 @@ app.post('/account', (req, res) => {
       return
     }
     if (req.body.pin !== req.session.data.security_pin) {
-      redisClient.set(email, JSON.stringify({pinAttempts: 0}), (err, reply) => {
+      redisClient.set(sanitizeGmail(email), JSON.stringify({pinAttempts: 0}), (err, reply) => {
         if (err) throw err
 
         console.log(`[email-update] email='${email}' pin attempts=0 redis response: ${reply}`)
@@ -153,7 +162,7 @@ app.post('/account', (req, res) => {
       res.end('<html>Email already in use.<a href="account">back</a></html>')
       return
     }
-    redisClient.get(email, (err, reply) => {
+    redisClient.get(sanitizeGmail(email), (err, reply) => {
       if (err) throw err
       if (reply !== null) {
         const emailData = JSON.parse(reply)
@@ -390,7 +399,7 @@ app.post('/reset', (req, res) => {
     res.end('<html>Check your mail.<a href="reset">back</a></html>')
     return
   }
-  redisClient.get(email, (err, reply) => {
+  redisClient.get(sanitizeGmail(email), (err, reply) => {
     if (err) throw err
     if (reply !== null) {
       const emailData = JSON.parse(reply)
@@ -412,7 +421,7 @@ app.post('/reset', (req, res) => {
 
       console.log(`[password-reset] token email='${email}' username='${username}' redis response: ${reply}`)
     })
-    redisClient.set(email, JSON.stringify({ expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
+    redisClient.set(sanitizeGmail(email), JSON.stringify({ expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
       if (err) throw err
 
       console.log(`[password-reset] email email='${email}' username='${username}' redis response: ${reply}`)
