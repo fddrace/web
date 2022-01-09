@@ -145,7 +145,6 @@ app.post('/account', (req, res) => {
         })
         res.end('<html>Invalid pin. Check /pin in game<a href="account">back</a></html>')
       }
-      return
     }
     if (req.body.pin !== req.session.data.security_pin) {
       redisClient.set(sanitizeGmail(email), JSON.stringify({pinAttempts: 0}), (err, reply) => {
