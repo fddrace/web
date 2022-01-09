@@ -322,6 +322,10 @@ app.post('/survey', async (req, res) => {
   })
 })
 
+app.get('/reset', (req, res) => {
+  res.render('reset')
+})
+
 app.post('/reset', (req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html' })
   const token = uuidv4()
