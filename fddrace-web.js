@@ -58,9 +58,9 @@ app.set('view engine', 'ejs')
 
 const sanitizeGmail = email => {
   if (email.endsWith('gmail.com')) {
-    return email.toLowerCase().replace(/@gmail.com$/).replaceAll('.', '') + '@gmail.com'
+    return email.toLowerCase().replace(/@gmail.com$/, '').replaceAll('.', '') + '@gmail.com'
   } else if (email.endsWith('googlemail.com')) {
-    return email.toLowerCase().replace(/@googlemail.com$/).replaceAll('.', '') + '@googlemail.com'
+    return email.toLowerCase().replace(/@googlemail.com$/, '').replaceAll('.', '') + '@googlemail.com'
   }
   return email
 }

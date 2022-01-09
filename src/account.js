@@ -98,10 +98,10 @@ const getAllAccFiles = () => {
 const getAccsByEmail = email => {
   let isGmail = false
   if (email.endsWith('gmail.com')) {
-    email = email.replace(/@gmail.com$/).replaceAll('.', '') + '@gmail.com'
+    email = email.replace(/@gmail.com$/, '').replaceAll('.', '') + '@gmail.com'
     isGmail = true
   } else if (email.endsWith('googlemail.com')) {
-    email = email.replace(/@googlemail.com$/).replaceAll('.', '') + '@googlemail.com'
+    email = email.replace(/@googlemail.com$/, '').replaceAll('.', '') + '@googlemail.com'
     isGmail = true
   }
   return getAllAccFiles().map(accFile => {
@@ -113,9 +113,9 @@ const getAccsByEmail = email => {
     }
     if (isGmail) {
       if (email.endsWith('gmail.com')) {
-        return data.email.toLowerCase().replace(/@gmail.com$/).replaceAll('.', '') + '@gmail.com' === email
+        return data.email.toLowerCase().replace(/@gmail.com$/, '').replaceAll('.', '') + '@gmail.com' === email
       } else if (email.endsWith('googlemail.com')) {
-        return data.email.toLowerCase().replace(/@googlemail.com$/).replaceAll('.', '') + '@googlemail.com' === email
+        return data.email.toLowerCase().replace(/@googlemail.com$/, '').replaceAll('.', '') + '@googlemail.com' === email
       }
       return false
     }
