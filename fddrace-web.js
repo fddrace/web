@@ -98,37 +98,85 @@ app.post('/account', (req, res) => {
     res.end('<html>Please set a pin. Check /pin in game<a href="account">back</a></html>')
     return
   }
-  if (req.body.pin !== req.session.data.security_pin) {
-    res.end('<html>Invalid pin. Check /pin in game<a href="account">back</a></html>')
-    return
-  }
-
   const email = req.body.email.trim().toLowerCase()
-  const acc = getAccsByEmail(email)[0]
-  if (acc) {
-    res.end('<html>Email already in use.<a href="account">back</a></html>')
-    return
-  }
   redisClient.get(email, (err, reply) => {
     if (err) throw err
     if (reply !== null) {
-      const today = new Date().toISOString().split('T')[0]
-      if (reply > today) {
-        console.log(`[email-update] Error: email ratelimit email=${email} expire=${reply} today=${today}`)
-        res.end('<html>Email already pending. Try again later.<a href="account">back</a></html>')
-        return
-      }
-    }
-    const username = req.session.data.username
-    const expireDate = new Date()
-    expireDate.setTime(expireDate.getTime() + 3 * 86400000)
-    redisClient.set(token, JSON.stringify({ username: username, email: email, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
-      if (err) throw err
+      const emailData = JSON.parse(reply)
+      if (req.body.pin !== req.session.data.security_pin) {
+        if (Object.prototype.hasOwnProperty.call(emailData, 'pinExpire')) {
+          const today = new Date().toISOString().split('T')[0]
+          if (emailData.pinExpire > today) {
+            res.end('<html>Ratelimited pin attempts. Try again tomorrow.<a href="account">back</a></html>')
+            return
+          }
+        }
+        if (Object.prototype.hasOwnProperty.call(emailData, 'pinAttempts')) {
+          emailData.pinAttempts += 1
+        } else {
+          emailData.pinAttempts = 0
+        }
 
-      console.log(`[email-update] email='${email}' username='${username}' redis response: ${reply}`)
+        if (emailData.pinAttempts >= 3) {
+          emailData.pinAttempts = 0
+          // ban 1 day after 3 attempts
+          const expireDate = new Date()
+          expireDate.setTime(expireDate.getTime() + 1 * 86400000)
+          emailData.pinExpire = expireDate.toISOString().split('T')[0]
+          redisClient.set(email, JSON.stringify(emailData), (err, reply) => {
+            if (err) throw err
+
+            console.log(`[email-update] email='${email}' pin attempts=${emailData.pinAttempts} (banned) redis response: ${reply}`)
+          })
+        }
+        redisClient.set(email, JSON.stringify(emailData), (err, reply) => {
+          if (err) throw err
+
+          console.log(`[email-update] email='${email}' pin attempts=${emailData.pinAttempts} redis response: ${reply}`)
+        })
+        res.end('<html>Invalid pin. Check /pin in game<a href="account">back</a></html>')
+      }
+      return
+    }
+    if (req.body.pin !== req.session.data.security_pin) {
+      redisClient.set(email, JSON.stringify({pinAttempts: 0}), (err, reply) => {
+        if (err) throw err
+
+        console.log(`[email-update] email='${email}' pin attempts=0 redis response: ${reply}`)
+      })
+      res.end('<html>Invalid pin. Check /pin in game<a href="account">back</a></html>')
+      return
+    }
+
+    const acc = getAccsByEmail(email)[0]
+    if (acc) {
+      res.end('<html>Email already in use.<a href="account">back</a></html>')
+      return
+    }
+    redisClient.get(email, (err, reply) => {
+      if (err) throw err
+      if (reply !== null) {
+        const emailData = JSON.parse(reply)
+        if (Object.prototype.hasOwnProperty.call(emailData, 'expire')) {
+          const today = new Date().toISOString().split('T')[0]
+          if (emailData.expire > today) {
+            console.log(`[email-update] Error: email ratelimit email=${email} expire=${emailData.expire} today=${today}`)
+            res.end('<html>Email already pending. Try again later.<a href="account">back</a></html>')
+            return
+          }
+        }
+      }
+      const username = req.session.data.username
+      const expireDate = new Date()
+      expireDate.setTime(expireDate.getTime() + 3 * 86400000)
+      redisClient.set(token, JSON.stringify({ username: username, email: email, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
+        if (err) throw err
+
+        console.log(`[email-update] email='${email}' username='${username}' redis response: ${reply}`)
+      })
+      sendMailVerify(email, token)
+      res.end('<html>Check your mail.<a href="account">back</a></html>')
     })
-    sendMailVerify(email, token)
-    res.end('<html>Check your mail.<a href="account">back</a></html>')
   })
 })
 
@@ -345,13 +393,17 @@ app.post('/reset', (req, res) => {
   redisClient.get(email, (err, reply) => {
     if (err) throw err
     if (reply !== null) {
-      const today = new Date().toISOString().split('T')[0]
-      if (reply > today) {
-        console.log(`[password-reset] Error: email ratelimit email=${email} expire=${reply} today=${today}`)
-        res.end('<html>Password reset already pending. Try again later.<a href="reset">back</a></html>')
-        return
+      const emailData = JSON.parse(reply)
+      if (Object.prototype.hasOwnProperty.call(emailData, 'expire')) {
+        const today = new Date().toISOString().split('T')[0]
+        if (emailData.expire > today) {
+          console.log(`[password-reset] Error: email ratelimit email=${email} expire=${emailData.expire} today=${today}`)
+          res.end('<html>Password reset already pending. Try again later.<a href="reset">back</a></html>')
+          return
+        }
       }
     }
+
     const expireDate = new Date()
     expireDate.setTime(expireDate.getTime() + 3 * 86400000)
     const username = acc.username
@@ -360,7 +412,7 @@ app.post('/reset', (req, res) => {
 
       console.log(`[password-reset] token email='${email}' username='${username}' redis response: ${reply}`)
     })
-    redisClient.set(email, expireDate.toISOString().split('T')[0], (err, reply) => {
+    redisClient.set(email, JSON.stringify({ expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
       if (err) throw err
 
       console.log(`[password-reset] email email='${email}' username='${username}' redis response: ${reply}`)
