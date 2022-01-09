@@ -96,10 +96,31 @@ const getAllAccFiles = () => {
 }
 
 const getAccsByEmail = email => {
+  let isGmail = false
+  if (email.endsWith('gmail.com')) {
+    email = email.replace(/@gmail.com$/).replaceAll('.', '') + '@gmail.com'
+    isGmail = true
+  } else if (email.endsWith('googlemail.com')) {
+    email = email.replace(/@googlemail.com$/).replaceAll('.', '') + '@googlemail.com'
+    isGmail = true
+  }
   return getAllAccFiles().map(accFile => {
     return parseAccData(fs.readFileSync(`${process.env.FDDR_ACCOUNTS_PATH}/${accFile}`, 'UTF-8')
       .split(/\r?\n/))
-  }).filter(data => data.email && data.email.toLowerCase() === email)
+  }).filter((data) => {
+    if (!data.email) {
+      return false
+    }
+    if (isGmail) {
+      if (email.endsWith('gmail.com')) {
+        return data.email.toLowerCase().replace(/@gmail.com$/).replaceAll('.', '') + '@gmail.com' === email
+      } else if (email.endsWith('googlemail.com')) {
+        return data.email.toLowerCase().replace(/@googlemail.com$/).replaceAll('.', '') + '@googlemail.com' === email
+      }
+      return false
+    }
+    return data.email.toLowerCase() === email
+  })
 }
 
 module.exports = {
