@@ -263,7 +263,7 @@ app.post('/login', async (req, res) => {
     res.end(`<html>${loggedIn} <a href="login">back</a></html>`)
   } else if (loggedIn) {
     req.session.data = loggedIn
-    console.log(`[login] '${req.body.username}' logged in'`)
+    console.log(`[login] '${req.body.username}' logged in`)
     res.end('<html>Sucessfully logged in. <a href="account">ok</a></html>')
   } else {
     res.end('<html>Failed to login. <a href="login">back</a></html>')
