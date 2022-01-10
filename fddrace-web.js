@@ -12,7 +12,7 @@ dotenv.config()
 const { sendMailPassword, sendMailVerify } = require('./src/mail')
 const { loginAccount, getAccsByEmail } = require('./src/account')
 const { execCmd } = require('./src/api')
-const { hasVoted, insertSurvey, getDb } = require('./src/survey')
+const { insertSurvey, getDb } = require('./src/survey')
 
 const port = 5690
 
@@ -148,7 +148,7 @@ app.post('/account', (req, res) => {
       }
     }
     if (req.body.pin !== req.session.data.security_pin) {
-      redisClient.set(sanitizeGmail(email), JSON.stringify({pinAttempts: 0}), (err, reply) => {
+      redisClient.set(sanitizeGmail(email), JSON.stringify({ pinAttempts: 0 }), (err, reply) => {
         if (err) throw err
 
         console.log(`[email-update] email='${email}' pin attempts=0 redis response: ${reply}`)
@@ -369,8 +369,7 @@ app.post('/survey', async (req, res) => {
     }
     if (rows) {
       res.end('<html>You already voted <a href="survey">back</a></html>')
-    }
-    else {
+    } else {
       insertSurvey(
         req.session.data.username,
         [req.body.question1, req.body.question2]

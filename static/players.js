@@ -1,3 +1,5 @@
+/* global fetch:false */
+
 const fillComplete = (players, completeList, input, completeIdentifier) => {
   if (!completeList) {
     return
