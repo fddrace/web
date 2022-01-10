@@ -10,17 +10,12 @@
 <body>
     <h1>F-DDrace survey</h1>
     <form action="#" method="POST">
-        <label for="question1">question1:</label>
-        <input type="text" class="complete-players complete-question1" name="question1" id="question1" placeholder="">
-        <ul class="complete-players complete-question1"></ul>
 
-        <label for="question2">question2:</label>
-        <input type="text" class="complete-players complete-question2" name="question2" id="question2" placeholder="">
-        <ul class="complete-players complete-question2"></ul>
-
-        <label for="question3">question3:</label>
-        <input type="text" class="complete-players complete-question3" name="question3" id="question3" placeholder="">
-        <ul class="complete-players complete-question3"></ul>
+        <% questions.forEach((question, i) => { %>
+            <label for="question<%= i %>"><%= question %>:</label>
+            <input type="text" class="complete-players complete-<%= i %>" name="questions[]" id="question<%= i %>" placeholder="">
+            <ul class="complete-players complete-<%= i %>"></ul>
+        <% }) %>
 
         <input type="submit" value="submit">
     </form>

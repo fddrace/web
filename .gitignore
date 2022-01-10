@@ -3,3 +3,4 @@ node_modules/
 .rdb
 *.db
 players.txt
+survey.json

@@ -332,26 +332,33 @@ app.get('/survey', (req, res) => {
     res.end('<html>You have to be at least level 10 to take part in the survey.<a href="/">okay</a></html>')
     return
   }
-  res.render('survey')
+  const questions = JSON.parse(fs.readFileSync('survey.json', 'UTF-8'))
+  res.render('survey', { questions: questions })
 })
 
-app.get('/survey_result', (req, res) => {
-  const questions = []
-  for (let i = 0; i < 3; i++) {
+const getSurveyResult = (index) => {
+  return new Promise(resolve => {
     getDb().get(`
-      SELECT question${i}, COUNT(question${i}) AS c
-      FROM Answers
-      GROUP BY question${i}
-      ORDER BY c;
-    `, (err, rows) => {
+    SELECT question${index}, COUNT(question${index}) AS c
+    FROM Answers
+    GROUP BY question${index}
+    ORDER BY c;
+  `, (err, rows) => {
       if (err) {
         throw err
       }
-      console.log(rows)
-      questions.push(rows)
+      resolve(rows)
     })
+  })
+}
+
+app.get('/survey_result', async (req, res) => {
+  const questions = JSON.parse(fs.readFileSync('survey.json', 'UTF-8'))
+  const results = []
+  for (let i = 0; i < questions.length; i++) {
+    results.push(await getSurveyResult(i))
   }
-  res.render('survey_result', { questions: questions })
+  res.render('survey_result', { results: results, questions: questions })
 })
 
 app.post('/survey', async (req, res) => {
@@ -371,11 +378,11 @@ app.post('/survey', async (req, res) => {
       console.log(`[survey] '${req.session.data.username}' voted already`)
       res.end('<html>You already voted <a href="survey">back</a></html>')
     } else {
+      console.log(`[survey] '${req.session.data.username}' voted: ${req.body.questions}`)
       insertSurvey(
         req.session.data.username,
-        [req.body.question1, req.body.question2, req.body.question3]
+        req.body.questions
       )
-      console.log(`[survey] '${req.session.data.username}' voted`)
       res.end('<html>OK <a href="survey">back</a></html>')
     }
   })

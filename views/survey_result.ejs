@@ -9,7 +9,10 @@
 </head>
 <body>
     <h1>F-DDrace survey</h1>
-    <!-- TODO: loop over questions and display top answers -->
+    <% results.forEach((result, i) => { %>
+        <h3><%= questions[i] %></h3>
+        <div><%= result[Object.keys(result)[0]] %> (<%= result.c %> Votes)</div>
+    <% }) %>
     <br>
     <a href="/">HOME</a>
     <script src="players.js"></script>
