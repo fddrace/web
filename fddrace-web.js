@@ -357,7 +357,10 @@ app.get('/survey_result', async (req, res) => {
   const questions = JSON.parse(fs.readFileSync('survey.json', 'UTF-8'))
   const results = []
   for (let i = 0; i < questions.length; i++) {
-    results.push(await getSurveyResult(i))
+    const row = await getSurveyResult(i)
+    if (row) {
+      results.push(row)
+    }
   }
   res.render('survey_result', { results: results, questions: questions })
 })
