@@ -478,6 +478,9 @@ app.post('/', (req, res) => {
   65    brainless tee
   10    (1)nameless tee
   200   unsorted_also_works
+
+  This file can be generated from server logs using this script
+  https://github.com/lib-crash/lib-teeworlds/blob/master/bin/tw_get_unique_names
 */
 app.get('/api/players/:player', (req, res) => {
   const player = decodeURIComponent(req.params.player)
