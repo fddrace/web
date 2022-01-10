@@ -4,6 +4,7 @@ const db = new sqlite3.Database('./db/survey.db')
 db.run(`
 CREATE TABLE IF NOT EXISTS Answers(
   username TEXT,
+  question0 TEXT,
   question1 TEXT,
   question2 TEXT
 )
@@ -12,13 +13,14 @@ CREATE TABLE IF NOT EXISTS Answers(
 const insertSurvey = (username, answers) => {
   db.run(
     `INSERT INTO Answers(
-      username, question1, question2
-    ) VALUES (?, ?, ?)
+      username, question0, question1, question2
+    ) VALUES (?, ?, ?, ?)
     `,
     [
       username,
       answers[0],
-      answers[1]
+      answers[1],
+      answers[2]
     ],
     (err) => {
       if (err) {

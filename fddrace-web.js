@@ -337,7 +337,7 @@ app.get('/survey', (req, res) => {
 
 app.get('/survey_result', (req, res) => {
   const questions = []
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 3; i++) {
     getDb().get(`
       SELECT question${i}, COUNT(question${i}) AS c
       FROM Answers
@@ -368,12 +368,14 @@ app.post('/survey', async (req, res) => {
       throw err
     }
     if (rows) {
+      console.log(`[survey] '${req.session.data.username}' voted already`)
       res.end('<html>You already voted <a href="survey">back</a></html>')
     } else {
       insertSurvey(
         req.session.data.username,
-        [req.body.question1, req.body.question2]
+        [req.body.question1, req.body.question2, req.body.question3]
       )
+      console.log(`[survey] '${req.session.data.username}' voted`)
       res.end('<html>OK <a href="survey">back</a></html>')
     }
   })
