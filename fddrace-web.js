@@ -341,8 +341,9 @@ const getSurveyResult = (index) => {
     getDb().get(`
     SELECT question${index}, COUNT(question${index}) AS c
     FROM Answers
+    WHERE question${index} != ''
     GROUP BY question${index}
-    ORDER BY c;
+    ORDER BY c DESC;
   `, (err, rows) => {
       if (err) {
         throw err
