@@ -12,7 +12,7 @@ dotenv.config()
 const { sendMailPassword, sendMailVerify } = require('./src/mail')
 const { loginAccount, getAccsByEmail } = require('./src/account')
 const { execCmd } = require('./src/api')
-const { insertSurvey, getDb } = require('./src/survey')
+const { insertSurvey, updateSurvey, getDb } = require('./src/survey')
 
 const port = 5690
 
@@ -323,7 +323,7 @@ app.get('/new-password', (req, res) => {
   })
 })
 
-app.get('/survey', (req, res) => {
+app.get('/survey', async (req, res) => {
   if (!req.session.data) {
     res.redirect('/login')
     return
@@ -333,7 +333,18 @@ app.get('/survey', (req, res) => {
     return
   }
   const questions = JSON.parse(fs.readFileSync('survey.json', 'UTF-8'))
-  res.render('survey', { questions: questions })
+  getDb().get('SELECT * FROM Answers WHERE username = ?', req.session.data.username, (err, rows) => {
+    if (err) {
+      throw err
+    }
+    if (rows) {
+      console.log(`[survey] '${req.session.data.username}' started editing the survey`)
+      res.render('survey', { questions: questions, answers: rows, isEdit: true })
+    } else {
+      console.log(`[survey] '${req.session.data.username}' started doing the survey`)
+      res.render('survey', { questions: questions, answers: [], isEdit: false })
+    }
+  })
 })
 
 const getSurveyResult = (index) => {
@@ -379,8 +390,12 @@ app.post('/survey', async (req, res) => {
       throw err
     }
     if (rows) {
-      console.log(`[survey] '${req.session.data.username}' voted already`)
-      res.end('<html>You already voted <a href="survey">back</a></html>')
+      console.log(`[survey] '${req.session.data.username}' updated his vote: ${req.body.questions}`)
+      updateSurvey(
+        req.session.data.username,
+        req.body.questions
+      )
+      res.end('<html>OK <a href="survey">back</a></html>')
     } else {
       if (req.body.questions.every(q => q === '' || !q)) {
         console.log(`[survey] '${req.session.data.username}' skipping empty vote`)

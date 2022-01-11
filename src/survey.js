@@ -33,9 +33,23 @@ const insertSurvey = (username, answers) => {
     })
 }
 
+const updateSurvey = (username, answers) => {
+  const insertQuery = `UPDATE Answers
+    SET username = ?, ${answers.map((q, i) => `question${i} = ?`).join(', ')}
+  `
+  db.run(insertQuery,
+    [username].concat(answers),
+    (err) => {
+      if (err) {
+        throw err
+      }
+    })
+}
+
 const getDb = () => db
 
 module.exports = {
   insertSurvey,
+  updateSurvey,
   getDb
 }
