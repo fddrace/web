@@ -2,6 +2,7 @@
 
 const fs = require('fs')
 const crypto = require('crypto')
+const logger = require('./logger')
 
 const parseAccData = data => {
   let i = 0
@@ -84,7 +85,7 @@ const loginAccount = async (username, password) => {
       return parseAccData(lines)
     }
   } catch (err) {
-    console.log(err)
+    logger.log('account', err)
     return false
   }
 }

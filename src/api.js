@@ -1,5 +1,7 @@
 const fetch = require('node-fetch')
 
+const logger = require('./logger')
+
 const execCmd = (cmd, args, callback, callbackArg) => {
   const apiUrl = `${process.env.API_HOST}/?t=${process.env.API_TOKEN}`
   fetch(`${apiUrl}&cmd=${cmd}&args=${args}`)
@@ -10,8 +12,8 @@ const execCmd = (cmd, args, callback, callbackArg) => {
       }
     })
     .catch(err => {
-      console.log('failed to reach api:')
-      console.log(err)
+      logger.log('econ', 'failed to reach api:')
+      logger.log('econ', err)
     })
 }
 

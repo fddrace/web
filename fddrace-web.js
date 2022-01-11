@@ -13,6 +13,7 @@ const { sendMailPassword, sendMailVerify } = require('./src/mail')
 const { loginAccount, getAccsByEmail } = require('./src/account')
 const { execCmd } = require('./src/api')
 const { insertSurvey, updateSurvey, getDb } = require('./src/survey')
+const logger = require('./src/logger')
 
 const port = 5690
 
@@ -135,13 +136,13 @@ app.post('/account', (req, res) => {
           redisClient.set(sanitizeGmail(email), JSON.stringify(emailData), (err, reply) => {
             if (err) throw err
 
-            console.log(`[email-update] email='${email}' pin attempts=${emailData.pinAttempts} (banned) redis response: ${reply}`)
+            logger.log('email-update', `email='${email}' pin attempts=${emailData.pinAttempts} (banned) redis response: ${reply}`)
           })
         }
         redisClient.set(sanitizeGmail(email), JSON.stringify(emailData), (err, reply) => {
           if (err) throw err
 
-          console.log(`[email-update] email='${email}' pin attempts=${emailData.pinAttempts} redis response: ${reply}`)
+          logger.log('[email-update]', `email='${email}' pin attempts=${emailData.pinAttempts} redis response: ${reply}`)
         })
         res.end('<html>Invalid pin. Check /pin in game<a href="account">back</a></html>')
         return
@@ -151,7 +152,7 @@ app.post('/account', (req, res) => {
       redisClient.set(sanitizeGmail(email), JSON.stringify({ pinAttempts: 0 }), (err, reply) => {
         if (err) throw err
 
-        console.log(`[email-update] email='${email}' pin attempts=0 redis response: ${reply}`)
+        logger.log('[email-update]', `email='${email}' pin attempts=0 redis response: ${reply}`)
       })
       res.end('<html>Invalid pin. Check /pin in game<a href="account">back</a></html>')
       return
@@ -169,7 +170,7 @@ app.post('/account', (req, res) => {
         if (Object.prototype.hasOwnProperty.call(emailData, 'expire')) {
           const today = new Date().toISOString().split('T')[0]
           if (emailData.expire > today) {
-            console.log(`[email-update] Error: email ratelimit email=${email} expire=${emailData.expire} today=${today}`)
+            logger.log('[email-update]', `Error: email ratelimit email=${email} expire=${emailData.expire} today=${today}`)
             res.end('<html>Email already pending. Try again later.<a href="account">back</a></html>')
             return
           }
@@ -181,7 +182,7 @@ app.post('/account', (req, res) => {
       redisClient.set(token, JSON.stringify({ username: username, email: email, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
         if (err) throw err
 
-        console.log(`[email-update] email='${email}' username='${username}' redis response: ${reply}`)
+        logger.log('[email-update]', `email='${email}' username='${username}' redis response: ${reply}`)
       })
       sendMailVerify(email, token)
       res.end('<html>Check your mail.<a href="account">back</a></html>')
@@ -197,16 +198,13 @@ app.get('/verify-email', async (req, res) => {
       return
     }
 
-    console.log(reply)
     const data = JSON.parse(reply)
     const today = new Date().toISOString().split('T')[0]
     if (data.expire <= today) {
       redisClient.del(token, (err, reply) => {
         if (err) throw err
-
-        console.log(reply)
       })
-      console.log(`[verify-email] Error: expired token username=${data.username} expire=${data.expire} today=${today}`)
+      logger.log('verify-email', `Error: expired token username=${data.username} expire=${data.expire} today=${today}`)
       res.end('Expired token')
       return
     }
@@ -227,8 +225,6 @@ app.get('/verify-email', async (req, res) => {
     req.session.data.email = email
     redisClient.del(token, (err, reply) => {
       if (err) throw err
-
-      console.log(reply)
     })
     res.redirect('/account?mail=success')
   })
@@ -237,7 +233,7 @@ app.get('/verify-email', async (req, res) => {
 app.get('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) {
-      console.log(err)
+      logger.log('logout', err)
     } else {
       res.redirect('/')
     }
@@ -263,7 +259,7 @@ app.post('/login', async (req, res) => {
     res.end(`<html>${loggedIn} <a href="login">back</a></html>`)
   } else if (loggedIn) {
     req.session.data = loggedIn
-    console.log(`[login] '${req.body.username}' logged in`)
+    logger.log('login', `'${req.body.username}' logged in`)
     res.end('<html>Sucessfully logged in. <a href="account">ok</a></html>')
   } else {
     res.end('<html>Failed to login. <a href="login">back</a></html>')
@@ -280,7 +276,7 @@ app.post('/new-password', (req, res) => {
     res.end('Invalid token.')
     return
   }
-  console.log(`redisClient get token='${token}'`)
+  logger.log('new-password', `get token='${token}'`)
   redisClient.get(token, (err, reply) => {
     if (err || reply === null) {
       res.end('Invalid token.')
@@ -288,23 +284,19 @@ app.post('/new-password', (req, res) => {
     }
 
     const data = JSON.parse(reply)
-    console.log(data)
+    logger.log('new-pasword', data)
     const today = new Date().toISOString().split('T')[0]
     if (data.expire <= today) {
       redisClient.del(token, (err, reply) => {
         if (err) throw err
-
-        console.log(reply)
       })
-      console.log(`[password-reset] Error: expired token username=${data.username} expire=${data.expire} today=${today}`)
+      logger.log('new-password', `Error: expired token username=${data.username} expire=${data.expire} today=${today}`)
       res.end('Expired token')
       return
     }
     execCmd('econ', `acc_edit ${data.username} password "${password}"`)
     redisClient.del(token, (err, reply) => {
       if (err) throw err
-
-      console.log(reply)
     })
     res.redirect('/login?password=success')
   })
@@ -318,7 +310,7 @@ app.get('/new-password', (req, res) => {
       return
     }
 
-    console.log(reply)
+    logger.log('new-password', reply)
     res.render('new-password', { username: JSON.parse(reply).username, token: token })
   })
 })
@@ -338,10 +330,10 @@ app.get('/survey', async (req, res) => {
       throw err
     }
     if (rows) {
-      console.log(`[survey] '${req.session.data.username}' started editing the survey`)
+      logger.log('survey', `'${req.session.data.username}' started editing the survey`)
       res.render('survey', { questions: questions, answers: rows, isEdit: true })
     } else {
-      console.log(`[survey] '${req.session.data.username}' started doing the survey`)
+      logger.log('survey', `'${req.session.data.username}' started doing the survey`)
       res.render('survey', { questions: questions, answers: [], isEdit: false })
     }
   })
@@ -390,7 +382,7 @@ app.post('/survey', async (req, res) => {
       throw err
     }
     if (rows) {
-      console.log(`[survey] '${req.session.data.username}' updated his vote: ${req.body.questions}`)
+      logger.log('survey', `'${req.session.data.username}' updated his vote: ${req.body.questions}`)
       updateSurvey(
         req.session.data.username,
         req.body.questions
@@ -398,11 +390,11 @@ app.post('/survey', async (req, res) => {
       res.end('<html>OK <a href="survey">back</a></html>')
     } else {
       if (req.body.questions.every(q => q === '' || !q)) {
-        console.log(`[survey] '${req.session.data.username}' skipping empty vote`)
+        logger.log('survey', `'${req.session.data.username}' skipping empty vote`)
         res.end('<html>OK <a href="survey">back</a></html>')
         return
       }
-      console.log(`[survey] '${req.session.data.username}' voted: ${req.body.questions}`)
+      logger.log('survey', `'${req.session.data.username}' voted: ${req.body.questions}`)
       insertSurvey(
         req.session.data.username,
         req.body.questions
@@ -439,7 +431,7 @@ app.post('/reset', (req, res) => {
       if (Object.prototype.hasOwnProperty.call(emailData, 'expire')) {
         const today = new Date().toISOString().split('T')[0]
         if (emailData.expire > today) {
-          console.log(`[password-reset] Error: email ratelimit email=${email} expire=${emailData.expire} today=${today}`)
+          logger.log('password-reset', `Error: email ratelimit email=${email} expire=${emailData.expire} today=${today}`)
           res.end('<html>Password reset already pending. Try again later.<a href="reset">back</a></html>')
           return
         }
@@ -452,12 +444,12 @@ app.post('/reset', (req, res) => {
     redisClient.set(token, JSON.stringify({ username: username, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
       if (err) throw err
 
-      console.log(`[password-reset] token email='${email}' username='${username}' redis response: ${reply}`)
+      logger.log('password-reset', `token email='${email}' username='${username}' redis response: ${reply}`)
     })
     redisClient.set(sanitizeGmail(email), JSON.stringify({ expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
       if (err) throw err
 
-      console.log(`[password-reset] email email='${email}' username='${username}' redis response: ${reply}`)
+      logger.log('password-reset', `email email='${email}' username='${username}' redis response: ${reply}`)
     })
     sendMailPassword(email, token)
     res.end('<html>Check your mail.<a href="reset">back</a></html>')
@@ -473,7 +465,7 @@ app.post('/', (req, res) => {
   const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
   const isOwnAddr = reqAddr === process.env.IP_ADDR
   if (reqHost !== process.env.CAPTCHA_BACKEND && !isOwnAddr) {
-    console.log(`[captcha] blocked post from invalid host='${reqHost}' addr='${reqAddr}' expected='${process.env.CAPTCHA_BACKEND}'`)
+    logger.log('captcha', `blocked post from invalid host='${reqHost}' addr='${reqAddr}' expected='${process.env.CAPTCHA_BACKEND}'`)
     res.end('ERROR')
     return
   }
@@ -481,9 +473,9 @@ app.post('/', (req, res) => {
   if (score === 1) {
     // do not save robot scores to save memory
     captchaData[req.body.token] = score
-    console.log(`[captcha] result=hooman ip=${req.ip}`)
+    logger.log('captcha', `result=hooman ip=${req.ip}`)
   } else {
-    console.log(`[captcha] result=robot ip=${req.ip}`)
+    logger.log('captcha', `result=robot ip=${req.ip}`)
   }
   res.end('OK')
 })
@@ -530,5 +522,5 @@ app.get('/api/players/:player', (req, res) => {
 app.use(express.static('static'))
 
 app.listen(port, () => {
-  console.log(`App running on http://localhost:${port}.`)
+  logger.log('server', `App running on http://localhost:${port}.`)
 })

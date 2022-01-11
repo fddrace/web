@@ -2,6 +2,8 @@
 
 const nodemailer = require('nodemailer')
 
+const logger = require('./logger')
+
 const transporter = nodemailer.createTransport({
   host: 'mail.zillyhuhn.com',
   port: 587,
@@ -23,9 +25,9 @@ const sendMailPassword = (toAddr, token) => {
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      return console.log(error)
+      return logger.log('mail', error)
     }
-    console.log('Message sent: %s', info.messageId)
+    logger.log('mail', 'Message sent: %s', info.messageId)
   })
 }
 
@@ -40,9 +42,9 @@ const sendMailVerify = (toAddr, token) => {
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      return console.log(error)
+      return logger.log('mail', error)
     }
-    console.log('Message sent: %s', info.messageId)
+    logger.log('mail', 'Message sent: %s', info.messageId)
   })
 }
 
