@@ -387,11 +387,11 @@ app.post('/survey', async (req, res) => {
         req.session.data.username,
         req.body.questions
       )
-      res.end('<html>OK <a href="survey">back</a></html>')
+      res.redirect('/survey_result')
     } else {
       if (req.body.questions.every(q => q === '' || !q)) {
         logger.log('survey', `'${req.session.data.username}' skipping empty vote`)
-        res.end('<html>OK <a href="survey">back</a></html>')
+        res.redirect('/survey_result')
         return
       }
       logger.log('survey', `'${req.session.data.username}' voted: ${req.body.questions}`)
@@ -399,7 +399,7 @@ app.post('/survey', async (req, res) => {
         req.session.data.username,
         req.body.questions
       )
-      res.end('<html>OK <a href="survey">back</a></html>')
+      res.redirect('/survey_result')
     }
   })
 })

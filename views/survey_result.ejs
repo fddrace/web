@@ -8,15 +8,19 @@
     <title>survey</title>
 </head>
 <body>
-    <h1>F-DDrace survey</h1>
-    <% results.forEach((result) => { %>
-        <% const key = Object.keys(result)[0] %>
-        <% const index = key.match(/\d+/)[0] %>
-        <h3><%= questions[index] %></h3>
-        <div><%= result[key] %> (<%= result.c %> Votes)</div>
-    <% }) %>
-    <br>
-    <a href="/">HOME</a>
+    <div class="wrapper">
+        <div class="content" style="display: block">
+            <h1>F-DDrace survey</h1>
+            <% results.forEach((result) => { %>
+                <% const key = Object.keys(result)[0] %>
+                <% const index = key.match(/\d+/)[0] %>
+                <h3><%= questions[index] %></h3>
+                <div><%= result[key] %> (<%= result.c %> Votes)</div>
+            <% }) %>
+            <br>
+            <a href="/">HOME</a>
+        </div>
+    </div>
     <script src="players.js"></script>
 </body>
 </html>
