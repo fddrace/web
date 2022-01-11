@@ -2,5 +2,6 @@ node_modules/
 .env
 .rdb
 *.db
+logs/*.txt
 players.txt
 survey.json
