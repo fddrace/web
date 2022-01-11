@@ -38,14 +38,15 @@ input[type=text], input[type=password] {
 }
 
 .btn {
-    width: 195px;
-    background-color: rgb(39, 206, 39);
-    border: 2px solid rgb(19, 175, 19);
+    padding: 10px;
+    width: 500px;
+    background-color: rgb(194, 188, 105);
+    border: 2px solid rgb(231, 178, 62);
     border-radius: 3px;
 }
 
 .btn:hover {
-    background-color: rgb(57, 230, 57);
+    background-color: rgb(235, 183, 70);
 }
 
 .content {
