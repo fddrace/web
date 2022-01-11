@@ -11,17 +11,21 @@
     <% if (messageGreen) { %>
         <div class="message-green"><%= messageGreen %></div>
     <% } %>
-    <h1><%= data.username %></h1>
-    <p>level: <%= data.level %></p>
-    <p>money: <%= data.money %></p>
-    <form action="account" method="POST">
-        <input type="email" name="email" id="email" placeholder="email" value="<%= data.email %>">
-        <input type="text" name="pin" id="pin" placeholder="See /pin in game">
-        <input type="submit" value="update email">
-    </form>
-    <br>
-    <a href="/survey">survey</a>
-    <br><br>
-    <a href="/logout">logout</a>
+    <div class="wrapper">
+        <div class="content" style="display: block">
+            <h1><%= data.username %></h1>
+            <p>level: <%= data.level %></p>
+            <p>money: <%= data.money %></p>
+            <form action="account" method="POST">
+                <input type="email" name="email" id="email" placeholder="email" value="<%= data.email %>">
+                <input type="text" name="pin" id="pin" placeholder="See /pin in game">
+                <input type="submit" value="update email">
+            </form>
+            <br>
+            <a href="/survey">survey</a>
+            <br><br>
+            <a href="/logout">logout</a>
+        </div>
+    </div>
 </body>
 </html>

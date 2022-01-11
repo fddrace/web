@@ -1,3 +1,15 @@
+html, body {
+    padding: 0;
+    margin: 0;
+    /* BlmapChill BG colors */
+    background: linear-gradient(135deg, rgba(255, 166, 140, 255), transparent), linear-gradient(-135deg, rgba(255, 133, 102, 255), transparent),
+        linear-gradient(45deg, rgba(255, 211, 172, 255), transparent), linear-gradient(-45deg, rgba(255, 204, 176, 255), transparent);
+}
+
+html {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 .message-green {
     border: 2px solid green;
     border-radius: 4px;
@@ -17,4 +29,59 @@
 
 .complete-entry:hover {
     background-color: rgb(137, 228, 152);
+}
+
+input[type=text], input[type=password] {
+    padding: 4px;
+    border: 1px solid rgb(250, 223, 242);
+    border-radius: 3px;
+}
+
+.btn {
+    width: 195px;
+    background-color: rgb(39, 206, 39);
+    border: 2px solid rgb(19, 175, 19);
+    border-radius: 3px;
+}
+
+.btn:hover {
+    background-color: rgb(57, 230, 57);
+}
+
+.content {
+    padding: 10px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: rgba(54, 0, 14, 0.034);
+    border: 5px solid rgba(54, 0, 14, 0.144);
+    border-radius: 4px;
+    max-width: 350px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.content {
+    margin: 50px;
+    padding: 10px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: rgba(54, 0, 14, 0.034);
+    border: 5px solid rgba(54, 0, 14, 0.144);
+    border-radius: 4px;
+    max-width: 800px;
+}
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.wrapper {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
 }

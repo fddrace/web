@@ -11,24 +11,29 @@
     <% if (messageGreen) { %>
         <div class="message-green"><%= messageGreen %></div>
     <% } %>
-    <form action="/login" method="POST">
-        <label for="username">Username:</label>
-        <input type="text" name="username" id="username" placeholder="username">
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" name="password" id="password" placeholder="password">
-        <br>
-        <% if (process.env.ALPHA_TOKEN) { %>
-            <label for="alphatoken">Alpha token:</label>
-            <input type="password" name="alphatoken" id="alphatoken" placeholder="Alpha token">
-            <br>
-        <% } %>
-        <input type="hidden" name="token" id="token" value="<%= token %>">
-        <% if (isCaptcha) { %>
-            <iframe width="500px" height="330px" src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>&w=90&h=50" scrolling="no" frameborder="0"></iframe>
-        <% } %>
-        <br>
-        <input type="submit" value="login">
-    </form>
+    <div class="wrapper">
+        <div class="content flex-center">
+            <form action="/login" method="POST">
+                <label for="username">Username:</label><br>
+                <input type="text" name="username" id="username" placeholder="username" size="20">
+                <br>
+                <br>
+                <label for="password">Password:</label><br>
+                <input type="password" name="password" id="password" placeholder="password" size="20">
+                <br>
+                <% if (process.env.ALPHA_TOKEN) { %>
+                    <label for="alphatoken">Alpha token:</label>
+                    <input type="password" name="alphatoken" id="alphatoken" placeholder="Alpha token">
+                    <br>
+                <% } %>
+                <input type="hidden" name="token" id="token" value="<%= token %>">
+                <% if (isCaptcha) { %>
+                    <iframe width="500px" height="330px" src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>&w=90&h=50" scrolling="no" frameborder="0"></iframe>
+                <% } %>
+                <br>
+                <input type="submit" value="login" class="btn">
+            </form>
+        </div>
+    </div>
 </body>
 </html>
