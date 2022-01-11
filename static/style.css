@@ -1,4 +1,6 @@
 html, body {
+    height: 100%;
+    width: 100%;
     padding: 0;
     margin: 0;
     /* BlmapChill BG colors */
@@ -11,10 +13,19 @@ html {
 }
 
 .message-green {
-    border: 2px solid green;
+    border: 2px solid rgba(0, 128, 0, 0.75);
     border-radius: 4px;
     padding: 10px;
-    background-color: rgb(10, 175, 10);
+    background-color: rgba(10, 175, 10, 0.75);
+    color: white;
+    margin: 5px;
+}
+
+.message-red {
+    border: 2px solid rgba(209, 18, 50, 0.75);
+    border-radius: 4px;
+    padding: 10px;
+    background-color: rgba(172, 22, 47, 0.75);
     color: white;
     margin: 5px;
 }
@@ -31,7 +42,7 @@ html {
     background-color: rgb(137, 228, 152);
 }
 
-input[type=text], input[type=password] {
+input[type=text], input[type=password], input[type=email] {
     padding: 4px;
     border: 1px solid rgb(250, 223, 242);
     border-radius: 3px;
@@ -80,9 +91,27 @@ input[type=text], input[type=password] {
 }
 
 .wrapper {
-    width: 100vw;
-    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: flex-start;
+}
+
+.navbar {
+    height: 50px;
+    border-bottom: 2px solid black;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.nav-item {
+    margin-left: 10px;
+    margin-right: 10px;
+    font-size: 1.5em;
+    text-decoration: none;
+    color: black;
+}
+
+.nav-item:hover {
+    color: rgb(233, 216, 120);
 }

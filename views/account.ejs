@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+    <%- include('partial/navbar', {data: data}); %>
     <% if (messageGreen) { %>
         <div class="message-green"><%= messageGreen %></div>
     <% } %>

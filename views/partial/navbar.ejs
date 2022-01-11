@@ -1,0 +1,14 @@
+<div class="navbar">
+    <a class="nav-item" href="/">
+        F-DDrace
+    </a>
+    <% if (data) { %>
+        <a class="nav-item" href="/account">
+            <%= data.username %>
+        </a>
+    <% } else { %>
+        <a class="nav-item" href="/login">
+            login
+        </a>
+    <% } %>
+</div>

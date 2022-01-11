@@ -68,6 +68,7 @@ const sanitizeGmail = email => {
 
 app.get('/', (req, res) => {
   res.render('index', {
+    data: req.session.data,
     token: process.env.CAPTCHA_TOKEN,
     hostname: process.env.HOSTNAME,
     captchaBackend: process.env.CAPTCHA_BACKEND
@@ -76,8 +77,17 @@ app.get('/', (req, res) => {
 
 app.get('/login', (req, res) => {
   const token = uuidv4()
+  let errMsg = false
+  if (req.query.login === 'fail') {
+    errMsg = 'Failed to login.'
+  } else if (req.query.login === 'robot') {
+    errMsg = 'Failed to login. Are you a robot?'
+  } else if (req.query.login === 'token') {
+    errMsg = 'Failed to login. Invalid alpha token.'
+  }
   res.render('login', {
     messageGreen: req.query.password === 'success' ? 'Password reset successfully' : false,
+    messageRed: errMsg,
     token: token,
     isCaptcha: isCaptcha,
     hostname: process.env.HOSTNAME,
@@ -241,15 +251,14 @@ app.get('/logout', (req, res) => {
 })
 
 app.post('/login', async (req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/html' })
   if (isCaptcha) {
     if (captchaData[req.body.token] !== 1) {
-      res.end('<html>Failed to login. Are you a robot?<a href="login">back</a></html>')
+      res.redirect('/login?login=robot')
       return
     }
   }
   if (process.env.ALPHA_TOKEN && req.body.alphatoken !== process.env.ALPHA_TOKEN) {
-    res.end('<html>Failed to login. Invalid alpha token.<a href="login">back</a></html>')
+    res.redirect('/login?login=fail-token')
     return
   }
   // tokens are one use only
@@ -260,9 +269,9 @@ app.post('/login', async (req, res) => {
   } else if (loggedIn) {
     req.session.data = loggedIn
     logger.log('login', `'${req.body.username}' logged in`)
-    res.end('<html>Sucessfully logged in. <a href="account">ok</a></html>')
+    res.redirect('/account')
   } else {
-    res.end('<html>Failed to login. <a href="login">back</a></html>')
+    res.redirect('/login?login=fail')
   }
 })
 
@@ -331,10 +340,10 @@ app.get('/survey', async (req, res) => {
     }
     if (rows) {
       logger.log('survey', `'${req.session.data.username}' started editing the survey`)
-      res.render('survey', { questions: questions, answers: rows, isEdit: true })
+      res.render('survey', { data: req.session.data, questions: questions, answers: rows, isEdit: true })
     } else {
       logger.log('survey', `'${req.session.data.username}' started doing the survey`)
-      res.render('survey', { questions: questions, answers: [], isEdit: false })
+      res.render('survey', { data: req.session.data, questions: questions, answers: [], isEdit: false })
     }
   })
 })
@@ -365,7 +374,7 @@ app.get('/survey_result', async (req, res) => {
       results.push(row)
     }
   }
-  res.render('survey_result', { results: results, questions: questions })
+  res.render('survey_result', { data: req.session.data, results: results, questions: questions })
 })
 
 app.post('/survey', async (req, res) => {
