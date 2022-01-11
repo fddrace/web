@@ -382,6 +382,11 @@ app.post('/survey', async (req, res) => {
       console.log(`[survey] '${req.session.data.username}' voted already`)
       res.end('<html>You already voted <a href="survey">back</a></html>')
     } else {
+      if (req.body.questions.every(q => q === '' || !q)) {
+        console.log(`[survey] '${req.session.data.username}' skipping empty vote`)
+        res.end('<html>OK <a href="survey">back</a></html>')
+        return
+      }
       console.log(`[survey] '${req.session.data.username}' voted: ${req.body.questions}`)
       insertSurvey(
         req.session.data.username,
