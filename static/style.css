@@ -3,9 +3,11 @@ html, body {
     width: 100%;
     padding: 0;
     margin: 0;
+    background: url('cave.svg'), #62492dff;
     /* BlmapChill BG colors */
-    background: linear-gradient(135deg, rgba(255, 166, 140, 255), transparent), linear-gradient(-135deg, rgba(255, 133, 102, 255), transparent),
-        linear-gradient(45deg, rgba(255, 211, 172, 255), transparent), linear-gradient(-45deg, rgba(255, 204, 176, 255), transparent);
+    /* background: opacity(url("cave.svg")),
+        linear-gradient(135deg, rgba(255, 166, 140, 255), transparent), linear-gradient(-135deg, rgba(255, 133, 102, 255), transparent),
+        linear-gradient(45deg, rgba(255, 211, 172, 255), transparent), linear-gradient(-45deg, rgba(255, 204, 176, 255), transparent); */
 }
 
 html {
@@ -44,8 +46,16 @@ html {
 
 input[type=text], input[type=password], input[type=email] {
     padding: 4px;
-    border: 1px solid rgb(250, 223, 242);
+}
+
+input {
     border-radius: 3px;
+    border: 3px solid rgb(82, 60, 33);
+    background-color: rgba(98, 73, 45, 0.575);
+}
+
+input:hover {
+    background-color: rgba(128, 94, 56, 0.575);
 }
 
 .btn {
@@ -78,7 +88,7 @@ input[type=text], input[type=password], input[type=email] {
     padding: 10px;
     padding-top: 20px;
     padding-bottom: 20px;
-    background-color: rgba(54, 0, 14, 0.034);
+    background-color: #543e24ff;
     border: 5px solid rgba(54, 0, 14, 0.144);
     border-radius: 4px;
     max-width: 800px;
@@ -97,8 +107,9 @@ input[type=text], input[type=password], input[type=email] {
 }
 
 .navbar {
+    background-color: #543e24ff;
     height: 50px;
-    border-bottom: 2px solid black;
+    border-bottom: 2px solid rgb(71, 52, 29);
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
