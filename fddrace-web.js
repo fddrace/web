@@ -152,7 +152,7 @@ app.post('/account', (req, res) => {
         redisClient.set(sanitizeGmail(email), JSON.stringify(emailData), (err, reply) => {
           if (err) throw err
 
-          logger.log('[email-update]', `email='${email}' pin attempts=${emailData.pinAttempts} redis response: ${reply}`)
+          logger.log('email-update', `email='${email}' pin attempts=${emailData.pinAttempts} redis response: ${reply}`)
         })
         res.end('<html>Invalid pin. Check /pin in game<a href="account">back</a></html>')
         return
@@ -162,7 +162,7 @@ app.post('/account', (req, res) => {
       redisClient.set(sanitizeGmail(email), JSON.stringify({ pinAttempts: 0 }), (err, reply) => {
         if (err) throw err
 
-        logger.log('[email-update]', `email='${email}' pin attempts=0 redis response: ${reply}`)
+        logger.log('email-update', `email='${email}' pin attempts=0 redis response: ${reply}`)
       })
       res.end('<html>Invalid pin. Check /pin in game<a href="account">back</a></html>')
       return
@@ -180,7 +180,7 @@ app.post('/account', (req, res) => {
         if (Object.prototype.hasOwnProperty.call(emailData, 'expire')) {
           const today = new Date().toISOString().split('T')[0]
           if (emailData.expire > today) {
-            logger.log('[email-update]', `Error: email ratelimit email=${email} expire=${emailData.expire} today=${today}`)
+            logger.log('email-update', `Error: email ratelimit email=${email} expire=${emailData.expire} today=${today}`)
             res.end('<html>Email already pending. Try again later.<a href="account">back</a></html>')
             return
           }
@@ -192,7 +192,7 @@ app.post('/account', (req, res) => {
       redisClient.set(token, JSON.stringify({ username: username, email: email, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
         if (err) throw err
 
-        logger.log('[email-update]', `email='${email}' username='${username}' redis response: ${reply}`)
+        logger.log('email-update', `email='${email}' username='${username}' redis response: ${reply}`)
       })
       sendMailVerify(email, token)
       res.end('<html>Check your mail.<a href="account">back</a></html>')
