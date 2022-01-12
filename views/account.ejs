@@ -23,7 +23,11 @@
                 <input type="submit" value="update email">
             </form>
             <br>
-            <a href="/survey">survey</a>
+            <% if(voted) { %>
+                <a href="/survey_result">view survey result</a>
+            <% } else { %>
+                <a href="/survey">survey</a>
+            <% } %>
             <br><br>
             <a href="/logout">logout</a>
         </div>

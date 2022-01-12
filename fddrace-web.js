@@ -97,7 +97,24 @@ app.get('/login', (req, res) => {
 
 app.get('/account', (req, res) => {
   if (req.session.data) {
-    res.render('account', { data: req.session.data, messageGreen: req.query.mail === 'success' ? 'E-Mail verified' : false })
+    getDb().get('SELECT * FROM Answers WHERE username = ?', req.session.data.username, (err, rows) => {
+      if (err) {
+        throw err
+      }
+      if (rows) {
+        res.render('account', {
+          voted: true,
+          data: req.session.data,
+          messageGreen: req.query.mail === 'success' ? 'E-Mail verified' : false
+        })
+      } else {
+        res.render('account', {
+          voted: false,
+          data: req.session.data,
+          messageGreen: req.query.mail === 'success' ? 'E-Mail verified' : false
+        })
+      }
+    })
   } else {
     res.redirect('/login')
   }
