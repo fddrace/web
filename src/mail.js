@@ -27,7 +27,7 @@ const sendMailPassword = (toAddr, token) => {
     if (error) {
       return logger.log('mail', error)
     }
-    logger.log('mail', 'Message sent: %s', info.messageId)
+    logger.log('mail', `Message sent: ${info.messageId}`)
   })
 }
 
@@ -44,7 +44,7 @@ const sendMailVerify = (toAddr, token) => {
     if (error) {
       return logger.log('mail', error)
     }
-    logger.log('mail', 'Message sent: %s', info.messageId)
+    logger.log('mail', `Message sent: ${info.messageId}`)
   })
 }
 
