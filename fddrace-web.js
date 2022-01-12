@@ -510,11 +510,11 @@ app.get('/api/players/:player', (req, res) => {
   const player = decodeURIComponent(req.params.player)
   const players = []
   if (!process.env.PLAYER_NAMES_PATH) {
-    res.end([])
+    res.end('[]')
     return []
   }
   if (!fs.existsSync(process.env.PLAYER_NAMES_PATH)) {
-    res.end([])
+    res.end('[]')
     return []
   }
   fs.readFileSync(process.env.PLAYER_NAMES_PATH, 'UTF-8')
