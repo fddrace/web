@@ -11,7 +11,7 @@ dotenv.config()
 
 const { sendMailPassword, sendMailVerify } = require('./src/mail')
 const { loginAccount, getAccsByEmail } = require('./src/account')
-const { execCmd } = require('./src/api')
+const { execCmd, testEcon } = require('./src/api')
 const { insertSurvey, updateSurvey, getDb } = require('./src/survey')
 const logger = require('./src/logger')
 
@@ -532,4 +532,5 @@ app.use(express.static('static'))
 
 app.listen(port, () => {
   logger.log('server', `App running on http://localhost:${port}.`)
+  testEcon()
 })

@@ -17,6 +17,20 @@ const execCmd = (cmd, args, callback, callbackArg) => {
     })
 }
 
+const testEcon = () => {
+  const apiUrl = `${process.env.API_HOST}/?t=${process.env.API_TOKEN}`
+  fetch(`${apiUrl}&cmd=econ&args=echo nodejs test`)
+    .then(r => r.json())
+    .then(data => {
+      logger.log(data)
+    })
+    .catch(err => {
+      logger.log('econ', 'failed to reach api:')
+      logger.log('econ', err)
+    })
+}
+
 module.exports = {
-  execCmd
+  execCmd,
+  testEcon
 }
