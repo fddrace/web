@@ -34,11 +34,12 @@ const insertSurvey = (username, answers) => {
 }
 
 const updateSurvey = (username, answers) => {
-  const insertQuery = `UPDATE Answers
-    SET username = ?, ${answers.map((q, i) => `question${i} = ?`).join(', ')}
+  const updateQuery = `UPDATE Answers
+    ${answers.map((q, i) => `question${i} = ?`).join(', ')}
+    WHERE username = ?;
   `
-  db.run(insertQuery,
-    [username].concat(answers),
+  db.run(updateQuery,
+    answers.concat([username]),
     (err) => {
       if (err) {
         throw err
