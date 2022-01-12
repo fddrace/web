@@ -35,7 +35,7 @@ const insertSurvey = (username, answers) => {
 
 const updateSurvey = (username, answers) => {
   const updateQuery = `UPDATE Answers
-    ${answers.map((q, i) => `question${i} = ?`).join(', ')}
+    SET ${answers.map((q, i) => `question${i} = ?`).join(', ')}
     WHERE username = ?;
   `
   db.run(updateQuery,
