@@ -6,7 +6,7 @@ const questions = JSON.parse(fs.readFileSync('survey.json', 'UTF-8'))
 
 let dbQuery = `
 CREATE TABLE IF NOT EXISTS Answers(
-  username TEXT,`
+  username TEXT NOT NULL PRIMARY KEY,`
 
 questions.forEach((q, i) => {
   dbQuery += `
