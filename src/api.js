@@ -22,7 +22,7 @@ const testEcon = () => {
   fetch(`${apiUrl}&cmd=econ&args=echo nodejs test`)
     .then(r => r.json())
     .then(data => {
-      logger.log(data)
+      logger.log('econ', JSON.stringify(data))
     })
     .catch(err => {
       logger.log('econ', 'failed to reach api:')
