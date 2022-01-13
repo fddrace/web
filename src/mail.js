@@ -5,7 +5,7 @@ const nodemailer = require('nodemailer')
 const logger = require('./logger')
 
 const transporter = nodemailer.createTransport({
-  host: 'mail.zillyhuhn.com',
+  host: process.env.SMTP_SERVER,
   port: 587,
   secure: false, // true for 465, false for other ports
   auth: {
