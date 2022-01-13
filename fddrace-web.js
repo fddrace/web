@@ -369,12 +369,10 @@ app.get('/survey', async (req, res) => {
           res.end('<html>You already voted with another account.<br><a href="/">back</a><br><a href="/survey_result">results</a></html>')
         } else {
           if (rows) {
-            console.log(rows.count)
-            logger.log('survey', `'${req.session.data.username}' ip_votes=${rows.count} voted: ${req.body.questions}`)
+            logger.log('survey', `'${req.session.data.username}' ip_votes=${rows.count} started doing the survey`)
           } else {
-            logger.log('survey', `'${req.session.data.username}' voted: ${req.body.questions}`)
+            logger.log('survey', `'${req.session.data.username}' started doing the survey`)
           }
-          logger.log('survey', `'${req.session.data.username}' started doing the survey`)
           res.render('survey', { data: req.session.data, questions: questions, answers: [], isEdit: false })
         }
       })
