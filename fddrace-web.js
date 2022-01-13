@@ -212,7 +212,7 @@ app.post('/account', (req, res) => {
         logger.log('email-update', `email='${email}' username='${username}' redis response: ${reply}`)
       })
       sendMailVerify(email, token)
-      res.end('<html>Check your mail.<a href="account">back</a></html>')
+      res.end('<html>Check your mail. (also in spam folder -.-)<a href="account">back</a></html>')
     })
   })
 })
@@ -481,7 +481,7 @@ app.post('/reset', (req, res) => {
     // keep same message here as in happy path
     // to not leak emails
     // but tbh when setting the email it shows a error if others already use it so ye...
-    res.end('<html>Check your mail.<a href="reset">back</a></html>')
+    res.end('<html>Check your mail. (also in spam folder -.-)<a href="reset">back</a></html>')
     return
   }
   redisClient.get(sanitizeGmail(email), (err, reply) => {
@@ -512,7 +512,7 @@ app.post('/reset', (req, res) => {
       logger.log('password-reset', `email email='${email}' username='${username}' redis response: ${reply}`)
     })
     sendMailPassword(email, token)
-    res.end('<html>Check your mail.<a href="reset">back</a></html>')
+    res.end('<html>Check your mail. (also in spam folder -.-)<a href="reset">back</a></html>')
   })
 })
 
