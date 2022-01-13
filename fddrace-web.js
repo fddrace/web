@@ -403,6 +403,7 @@ app.post('/survey', async (req, res) => {
     res.end('<html>You have to be at least level 10 to take part in the survey.<a href="/">okay</a></html>')
     return
   }
+  const userIp = req.header('x-forwarded-for') || req.socket.remoteAddress
   getDb().get('SELECT * FROM Answers WHERE username = ?', req.session.data.username, (err, rows) => {
     if (err) {
       throw err
@@ -420,12 +421,28 @@ app.post('/survey', async (req, res) => {
         res.redirect('/survey_result')
         return
       }
-      logger.log('survey', `'${req.session.data.username}' voted: ${req.body.questions}`)
-      insertSurvey(
-        req.session.data.username,
-        req.body.questions
-      )
-      res.redirect('/survey_result')
+      getDb().get('SELECT COUNT(*) AS count FROM Answers WHERE ip = ?', userIp, (err, rows) => {
+        if (err) {
+          throw err
+        }
+        if (rows && rows.count > 2) {
+          logger.log('survey', `'${req.session.data.username}' could not vote due to ip limit reach`)
+          res.end('<html>You already voted with another account.<a href="/">okay</a></html>')
+        } else {
+          if (rows) {
+            console.log(rows.count)
+            logger.log('survey', `'${req.session.data.username}' ip_votes=${rows.count} voted: ${req.body.questions}`)
+          } else {
+            logger.log('survey', `'${req.session.data.username}' voted: ${req.body.questions}`)
+          }
+          insertSurvey(
+            req.session.data.username,
+            userIp,
+            req.body.questions
+          )
+          res.redirect('/survey_result')
+        }
+      })
     }
   })
 })

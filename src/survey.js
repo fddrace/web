@@ -6,7 +6,8 @@ const questions = JSON.parse(fs.readFileSync('survey.json', 'UTF-8'))
 
 let dbQuery = `
 CREATE TABLE IF NOT EXISTS Answers(
-  username TEXT NOT NULL PRIMARY KEY,`
+  username TEXT NOT NULL PRIMARY KEY,
+  ip TEXT,`
 
 questions.forEach((q, i) => {
   dbQuery += `
@@ -19,13 +20,13 @@ dbQuery += `
 
 db.run(dbQuery)
 
-const insertSurvey = (username, answers) => {
+const insertSurvey = (username, ip, answers) => {
   const insertQuery = `INSERT INTO Answers(
-    username, ${answers.map((q, i) => `question${i}`).join(', ')}
-  ) VALUES (?${', ?'.repeat(answers.length)})
+    username, ip, ${answers.map((q, i) => `question${i}`).join(', ')}
+  ) VALUES (?, ?${', ?'.repeat(answers.length)})
   `
   db.run(insertQuery,
-    [username].concat(answers),
+    [username, ip].concat(answers),
     (err) => {
       if (err) {
         throw err
