@@ -351,6 +351,7 @@ app.get('/survey', async (req, res) => {
     return
   }
   const questions = JSON.parse(fs.readFileSync('survey.json', 'UTF-8'))
+  const userIp = req.header('x-forwarded-for') || req.socket.remoteAddress
   getDb().get('SELECT * FROM Answers WHERE username = ?', req.session.data.username, (err, rows) => {
     if (err) {
       throw err
@@ -359,8 +360,24 @@ app.get('/survey', async (req, res) => {
       logger.log('survey', `'${req.session.data.username}' started editing the survey`)
       res.render('survey', { data: req.session.data, questions: questions, answers: rows, isEdit: true })
     } else {
-      logger.log('survey', `'${req.session.data.username}' started doing the survey`)
-      res.render('survey', { data: req.session.data, questions: questions, answers: [], isEdit: false })
+      getDb().get('SELECT COUNT(*) AS count FROM Answers WHERE ip = ?', userIp, (err, rows) => {
+        if (err) {
+          throw err
+        }
+        if (rows && rows.count > 2) {
+          logger.log('survey', `'${req.session.data.username}' could not vote due to ip limit reach`)
+          res.end('<html>You already voted with another account.<br><a href="/">back</a><br><a href="/survey_result">results</a></html>')
+        } else {
+          if (rows) {
+            console.log(rows.count)
+            logger.log('survey', `'${req.session.data.username}' ip_votes=${rows.count} voted: ${req.body.questions}`)
+          } else {
+            logger.log('survey', `'${req.session.data.username}' voted: ${req.body.questions}`)
+          }
+          logger.log('survey', `'${req.session.data.username}' started doing the survey`)
+          res.render('survey', { data: req.session.data, questions: questions, answers: [], isEdit: false })
+        }
+      })
     }
   })
 })
