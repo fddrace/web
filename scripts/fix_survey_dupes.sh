@@ -72,6 +72,7 @@ then
 	  }
 	]
 	EOF
+	exit 1
 fi
 
 function update_rows() {
