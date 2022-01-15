@@ -9,6 +9,17 @@
 # dataset contains mapping from 'ChillerDragon.*' to 'ChillerDragon'
 # after script run the db is left with 2 votes for 'ChillerDragon'
 
+arg_dbpath=./db/survey.db
+
+if [ "$1" == "--help" ] || [ "$1" == "-h" ]
+then
+	echo "usage: $(basename "$0") [db path]"
+	exit 0
+elif [ "$#" -gt "0" ]
+then
+	arg_dbpath="$1"
+fi
+
 function err() {
 	printf "[-] %s\n" "$1"
 }
@@ -29,9 +40,9 @@ check_dep xxd
 check_dep jq
 check_dep base64
 check_dep sqlite3
-if [ ! -f db/survey.db ]
+if [ ! -f "$arg_dbpath" ]
 then
-	err "db/survey.db not found"
+	err "$arg_dbpath not found"
 	exit 1
 fi
 
@@ -74,7 +85,7 @@ function update_rows() {
 	# correct="$(echo -n "$correct" | xxd -p)"
 	misspell="${misspell//\'/\'\'}"
 	correct="${correct//\'/\'\'}"
-	if [ ! -f db/survey.db ]
+	if [ ! -f "$arg_dbpath" ]
 	then
 		exit 1
 	fi
@@ -84,15 +95,15 @@ function update_rows() {
 		# echo "UPDATE Answers SET question$i = x'$correct' WHERE question$i = :spell;"
 		echo "UPDATE Answers SET question$i = '$correct' WHERE question$i = '$misspell';"
 	done >> ./db/tmp.sql
-	sqlite3 ./db/survey.db < ./db/tmp.sql
+	sqlite3 "$arg_dbpath" < ./db/tmp.sql
 }
 
 function get_num_questions() {
-	if [ ! -f db/survey.db ]
+	if [ ! -f "$arg_dbpath" ]
 	then
 		exit 1
 	fi
-	sqlite3 db/survey.db < <(echo ".schema") | grep -c question
+	sqlite3 "$arg_dbpath" < <(echo ".schema") | grep -c question
 }
 
 function main() {
