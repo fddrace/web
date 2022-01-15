@@ -17,21 +17,18 @@ function log() {
 	printf "[*] %s\n" "$1"
 }
 
-if [ ! -x "$(command -v jq)" ]
-then
-	err "missing dependency $(tput bold)jq$(tput sgr0)"
-	exit 1
-fi
-if [ ! -x "$(command -v base64)" ]
-then
-	err "missing dependency $(tput bold)base64$(tput sgr0)"
-	exit 1
-fi
-if [ ! -x "$(command -v sqlite3)" ]
-then
-	err "missing dependency $(tput bold)sqlite3$(tput sgr0)"
-	exit 1
-fi
+function check_dep() {
+	local dep="$1"
+	if [ ! -x "$(command -v "$dep")" ]
+	then
+		err "missing dependency $(tput bold)$dep$(tput sgr0)"
+		exit 1
+	fi
+}
+check_dep xxd
+check_dep jq
+check_dep base64
+check_dep sqlite3
 if [ ! -f db/survey.db ]
 then
 	err "db/survey.db not found"
@@ -71,11 +68,23 @@ function update_rows() {
 	local misspell="$2"
 	local num="$3"
 	local range
+	# start counting from 0
+	num="$((num - 1))"
 	range="$(eval "echo {0..$num}")"
+	# correct="$(echo -n "$correct" | xxd -p)"
+	misspell="${misspell//\'/\'\'}"
+	correct="${correct//\'/\'\'}"
+	if [ ! -f db/survey.db ]
+	then
+		exit 1
+	fi
 	for i in $range
 	do
-		echo "UPDATE Answers SET question$i = '$correct' WHERE question$i = '$misspell'"
-	done
+		# echo ".param set :spell $misspell"
+		# echo "UPDATE Answers SET question$i = x'$correct' WHERE question$i = :spell;"
+		echo "UPDATE Answers SET question$i = '$correct' WHERE question$i = '$misspell';"
+	done >> ./db/tmp.sql
+	sqlite3 ./db/survey.db < ./db/tmp.sql
 }
 
 function get_num_questions() {
@@ -102,10 +111,11 @@ function main() {
 		exit 1
 	fi
 
+	:> ./db/tmp.sql
 	while read -r row
 	do
 		correct="$(echo "$row" | base64 --decode | jq -r 'keys[0]')"
-		echo "$correct"
+		log "checking misspellings of '$correct' .."
 		while read -r misspell
 		do
 			update_rows "$correct" "$misspell" "$num_questions"
