@@ -520,9 +520,10 @@ app.set('trust proxy', true)
 
 app.post('/', (req, res) => {
   const reqHost = `${req.protocol}://${req.header('Host')}`
-  const reqAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+  const reqAddr = `${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`.split(',')[0]
   const isOwnAddr = reqAddr === process.env.IP_ADDR
-  if (reqHost !== process.env.CAPTCHA_BACKEND && !isOwnAddr) {
+  const isCaptchaAddr = reqAddr === process.env.CAPTCHA_BACKEND_IP
+  if (reqHost !== process.env.CAPTCHA_BACKEND && !isOwnAddr && !isCaptchaAddr) {
     logger.log('captcha', `blocked post from invalid host='${reqHost}' addr='${reqAddr}' expected='${process.env.CAPTCHA_BACKEND}'`)
     res.end('ERROR')
     return
