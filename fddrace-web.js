@@ -285,7 +285,7 @@ app.post('/login', async (req, res) => {
     res.end(`<html>${loggedIn} <a href="login">back</a></html>`)
   } else if (loggedIn) {
     req.session.data = loggedIn
-    logger.log('login', `'${req.body.username}' logged in`)
+    logger.log('login', `'${req.body.username}' logged in addr=${req.header('x-forwarded-for') || req.socket.remoteAddress}`)
     res.redirect('/account')
   } else {
     res.redirect('/login?login=fail')
