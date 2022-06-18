@@ -10,19 +10,16 @@
     <%- include('partial/navbar', {data: data}); %>
     <div class="wrapper">
         <div class="content" style="display: block;padding: 0px 100px 100px 100px;">
-        <!-- <h1>F-DDrace</h1> -->
-        <h1>Your ip <span style="color: rgb(130, 130, 130)"><%- ipAddr %></span> is now whitelisted!</h1>
-            <a href="https://discord.gg/qccRrtb">https://discord.gg/qccRrtb</a>
-            <br>
-            <script>
-                // setTimeout('window.location.reload();', 30000);
-                setInterval('fetch("https://f.zillyhuhn.com/").then(e => console.log(e));', 3000);
-            </script>
-            <form action="https://paypal.me/fokkonaut/" method="post" target="_top">
-                <input type="hidden" name="hosted_button_id" value="VUE6H3V2JAR3E" />
-                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-                <img alt="" border="0" src="https://www.paypal.com/en_DE/i/scr/pixel.gif" width="1" height="1" />
-            </form>
+            <!-- <h1>F-DDrace</h1> -->
+            <h1>Your ip <span style="color: rgb(130, 130, 130)"><%- ipAddr %></span> is now whitelisted!</h1>
+            <div class="icon-box">
+                <a href="https://discord.gg/qccRrtb"><img src="/teecord.png" class="img-link" alt="discord" width="128px"" /></a>
+                <form action="https://paypal.me/fokkonaut/" method="post" target="_top">
+                    <input type="hidden" name="hosted_button_id" value="VUE6H3V2JAR3E" />
+                    <input type="image" src="/paypal.png" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" height="128px"" />
+                    <img alt="" border="0" src="https://www.paypal.com/en_DE/i/scr/pixel.gif" width="1" height="1" />
+                </form>
+            </div>
         </div>
         <!--
             <iframe width="720px" height="600px" src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>" scrolling="no" frameborder="0"></iframe>
