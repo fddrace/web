@@ -1,3 +1,4 @@
+const fetch = require('node-fetch')
 const express = require('express')
 const session = require('express-session')
 const fs = require('fs')
@@ -268,13 +269,7 @@ app.get('/logout', (req, res) => {
   })
 })
 
-app.post('/login', async (req, res) => {
-  if (isCaptcha) {
-    if (captchaData[req.body.token] !== 1) {
-      res.redirect('/login?login=robot')
-      return
-    }
-  }
+const loginCaptchaPassed = async (req, res) => {
   if (process.env.ALPHA_TOKEN && req.body.alphatoken !== process.env.ALPHA_TOKEN) {
     res.redirect('/login?login=fail-token')
     return
@@ -291,6 +286,30 @@ app.post('/login', async (req, res) => {
   } else {
     res.redirect('/login?login=fail')
   }
+}
+
+app.post('/login', async (req, res) => {
+  if (!req.body.token) {
+    res.redirect('/login?login=robot')
+    return
+  }
+  const hexKey = Buffer.from(process.env.IP_ADDR + process.env.HOSTNAME + req.body.token, 'utf8').toString('hex')
+  const captchaUrl = `${process.env.CAPTCHA_BACKEND}/score/${hexKey}`
+  if (isCaptcha) {
+    if (captchaData[req.body.token] !== 1) {
+      fetch(captchaUrl)
+        .then(data => data.json())
+        .then(result => {
+          if (result.score !== 1) {
+            res.redirect('/login?login=robot')
+          } else {
+            loginCaptchaPassed(req, res)
+          }
+        })
+      return
+    }
+  }
+  loginCaptchaPassed(req, res)
 })
 
 app.post('/new-password', (req, res) => {
