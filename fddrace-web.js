@@ -68,6 +68,7 @@ const sanitizeGmail = email => {
 
 app.get('/', (req, res) => {
   res.render('index', {
+    ipAddr: req.header('x-forwarded-for') || req.socket.remoteAddress,
     data: req.session.data,
     token: process.env.CAPTCHA_TOKEN,
     hostname: process.env.HOSTNAME,
