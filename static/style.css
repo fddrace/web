@@ -14,12 +14,6 @@ html {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.icon-box {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-}
-
 .img-link {
     border: 5px solid rgba(0, 0, 0, 0);
 }
@@ -106,6 +100,36 @@ input:hover {
     border: 5px solid rgba(54, 0, 14, 0.144);
     border-radius: 4px;
     max-width: 800px;
+}
+
+.content-landing {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 50px;
+    background-color: #543e24ff;
+    border: 5px solid rgba(54, 0, 14, 0.144);
+    border-radius: 4px;
+    max-width: 800px;
+    display: block;
+    padding: 0px 100px 100px 100px;
+}
+
+.icon-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+/* mobile */
+@media screen and (max-width: 900px) {
+    .content-landing {
+        padding: 10px;
+    }
+    .icon-box {
+        flex-direction: column;
+        align-items: center;
+    }
 }
 
 .flex-center {
