@@ -15,7 +15,6 @@ let currentWidth = 0
 
 const resizeCaptcha = () => {
   const diff = Math.floor((Date.now() - lastResize) % 86400000)
-  console.log(diff)
   if (diff < 3000) {
     return
   }
