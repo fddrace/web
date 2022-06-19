@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="/style.css">
+    <script src="/main.js"></script>
 </head>
 <body>
     <% if (messageGreen) { %>
@@ -34,7 +35,7 @@
                 <% } %>
                 <input type="hidden" name="token" id="token" value="<%= token %>">
                 <% if (isCaptcha) { %>
-                    <iframe width="500px" height="330px" src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>&w=90&h=50" scrolling="no" frameborder="0"></iframe>
+                    <iframe src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>&w=90&h=50" scrolling="yes" frameborder="0"></iframe>
                 <% } %>
                 <br>
                 <input type="submit" value="login" class="btn">

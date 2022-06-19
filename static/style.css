@@ -129,6 +129,11 @@ input:hover {
     width: 128px;
 }
 
+iframe {
+    width: 500px;
+    height: 340px;
+}
+
 /* mobile */
 @media screen and (max-width: 900px) {
     .content-landing {
@@ -144,6 +149,13 @@ input:hover {
     }
     .paypal-icon {
         max-height: calc(80vw / 2.584);
+    }
+    input, .btn {
+        width: 80vw;
+    }
+    iframe {
+        width: 80vw;
+        overflow: scroll;
     }
 }
 
