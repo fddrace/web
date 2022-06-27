@@ -7,3 +7,5 @@ logs/*.txt
 players.txt
 survey.json
 survey_fix.json
+wl.sh
+

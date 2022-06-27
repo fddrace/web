@@ -1,4 +1,5 @@
 const fetch = require('node-fetch')
+const { exec } = require('child_process')
 const express = require('express')
 const session = require('express-session')
 const fs = require('fs')
@@ -68,8 +69,20 @@ const sanitizeGmail = email => {
 }
 
 app.get('/', (req, res) => {
+  const ipAddr = (req.header('x-forwarded-for') || req.socket.remoteAddress).split(',')[0]
+  exec(`./wl.sh ${ipAddr}`, (err, stdout, stderr) => {
+    if (err) {
+      throw err
+    }
+    if (stdout) {
+      logger.log('index', `stdout: ${stdout}`)
+    }
+    if (stderr) {
+      logger.log('index', `stderr: ${stderr}`)
+    }
+  })
   res.render('index', {
-    ipAddr: (req.header('x-forwarded-for') || req.socket.remoteAddress).split(',')[0],
+    ipAddr: ipAddr,
     data: req.session.data,
     token: process.env.CAPTCHA_TOKEN,
     hostname: process.env.HOSTNAME,
