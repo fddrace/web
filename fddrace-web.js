@@ -83,6 +83,7 @@ app.get('/', (req, res) => {
   })
   res.render('index', {
     ipAddr: ipAddr,
+    serverIp: process.env.IP_ADDR,
     data: req.session.data,
     token: process.env.CAPTCHA_TOKEN,
     hostname: process.env.HOSTNAME,
@@ -106,6 +107,7 @@ app.get('/login', (req, res) => {
     token: token,
     isCaptcha: isCaptcha,
     hostname: process.env.HOSTNAME,
+    serverIp: process.env.IP_ADDR,
     captchaBackend: process.env.CAPTCHA_BACKEND
   })
 })

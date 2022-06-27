@@ -35,7 +35,7 @@
                 <% } %>
                 <input type="hidden" name="token" id="token" value="<%= token %>">
                 <% if (isCaptcha) { %>
-                    <iframe src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>&w=90&h=50" scrolling="yes" frameborder="0"></iframe>
+                    <iframe src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>&w=90&h=50&ip=<%= serverIp %>" scrolling="yes" frameborder="0"></iframe>
                 <% } %>
                 <br>
                 <input type="submit" value="login" class="btn">
