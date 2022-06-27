@@ -298,8 +298,11 @@ app.post('/login', async (req, res) => {
   if (isCaptcha) {
     if (captchaData[req.body.token] !== 1) {
       fetch(captchaUrl)
-        .then(data => data.json())
-        .then(result => {
+        .then(data => data.text())
+        .then(text => {
+          logger.log('login', 'captcha data:')
+          logger.log('login', text)
+          const result = JSON.parse(text)
           if (result.score !== 1) {
             res.redirect('/login?login=robot')
           } else {
