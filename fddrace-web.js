@@ -70,18 +70,26 @@ const sanitizeGmail = email => {
 
 app.get('/', (req, res) => {
   const ipAddr = (req.header('x-forwarded-for') || req.socket.remoteAddress).split(',')[0]
-  exec(`./wl.sh ${ipAddr}`, (err, stdout, stderr) => {
-    if (err) {
-      logger.logAndThrow(err)
-    }
-    if (stdout) {
-      logger.log('index', `stdout: ${stdout}`)
-    }
-    if (stderr) {
-      logger.log('index', `stderr: ${stderr}`)
-    }
-  })
+  const ipv4Regex = /^(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}$/gm
+  let message = ''
+  if (!ipv4Regex.test(ipAddr)) {
+    message = `<h1 style="color: red">Your ip <span style="color: rgb(130, 130, 130)">${ipAddr}</span> is not a valid ipv4!</h1>`
+  } else {
+    message = `<h1>Your ip <span style="color: rgb(130, 130, 130)">${ipAddr}</span> is now whitelisted!</h1>`
+    exec(`./wl.sh ${ipAddr}`, (err, stdout, stderr) => {
+      if (err) {
+        logger.logAndThrow(err)
+      }
+      if (stdout) {
+        logger.log('index', `stdout: ${stdout}`)
+      }
+      if (stderr) {
+        logger.log('index', `stderr: ${stderr}`)
+      }
+    })
+  }
   res.render('index', {
+    whitelistMessage: message,
     ipAddr: ipAddr,
     serverIp: process.env.IP_ADDR,
     data: req.session.data,
