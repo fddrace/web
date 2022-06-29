@@ -1,6 +1,7 @@
 const sqlite3 = require('sqlite3').verbose()
 const db = new sqlite3.Database('./db/survey.db')
 const fs = require('fs')
+const logger = require('./logger')
 
 const questions = JSON.parse(fs.readFileSync('survey.json', 'UTF-8'))
 
@@ -29,7 +30,7 @@ const insertSurvey = (username, ip, answers) => {
     [username, ip].concat(answers),
     (err) => {
       if (err) {
-        throw err
+        logger.logAndThrow(err)
       }
     })
 }
@@ -43,7 +44,7 @@ const updateSurvey = (username, answers) => {
     answers.concat([username]),
     (err) => {
       if (err) {
-        throw err
+        logger.logAndThrow(err)
       }
     })
 }

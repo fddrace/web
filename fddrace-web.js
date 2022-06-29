@@ -72,7 +72,7 @@ app.get('/', (req, res) => {
   const ipAddr = (req.header('x-forwarded-for') || req.socket.remoteAddress).split(',')[0]
   exec(`./wl.sh ${ipAddr}`, (err, stdout, stderr) => {
     if (err) {
-      throw err
+      logger.logAndThrow(err)
     }
     if (stdout) {
       logger.log('index', `stdout: ${stdout}`)
@@ -116,7 +116,7 @@ app.get('/account', (req, res) => {
   if (req.session.data) {
     getDb().get('SELECT * FROM Answers WHERE username = ?', req.session.data.username, (err, rows) => {
       if (err) {
-        throw err
+        logger.logAndThrow(err)
       }
       if (rows) {
         res.render('account', {
@@ -154,7 +154,7 @@ app.post('/account', (req, res) => {
   }
   const email = req.body.email.trim().toLowerCase()
   redisClient.get(sanitizeGmail(email), (err, reply) => {
-    if (err) throw err
+    if (err) logger.logAndThrow(err)
     if (reply !== null) {
       const emailData = JSON.parse(reply)
       if (req.body.pin !== req.session.data.security_pin) {
@@ -178,13 +178,13 @@ app.post('/account', (req, res) => {
           expireDate.setTime(expireDate.getTime() + 1 * 86400000)
           emailData.pinExpire = expireDate.toISOString().split('T')[0]
           redisClient.set(sanitizeGmail(email), JSON.stringify(emailData), (err, reply) => {
-            if (err) throw err
+            if (err) logger.logAndThrow(err)
 
             logger.log('email-update', `email='${email}' pin attempts=${emailData.pinAttempts} (banned) redis response: ${reply}`)
           })
         }
         redisClient.set(sanitizeGmail(email), JSON.stringify(emailData), (err, reply) => {
-          if (err) throw err
+          if (err) logger.logAndThrow(err)
 
           logger.log('email-update', `email='${email}' pin attempts=${emailData.pinAttempts} redis response: ${reply}`)
         })
@@ -194,7 +194,7 @@ app.post('/account', (req, res) => {
     }
     if (req.body.pin !== req.session.data.security_pin) {
       redisClient.set(sanitizeGmail(email), JSON.stringify({ pinAttempts: 0 }), (err, reply) => {
-        if (err) throw err
+        if (err) logger.logAndThrow(err)
 
         logger.log('email-update', `email='${email}' pin attempts=0 redis response: ${reply}`)
       })
@@ -208,7 +208,7 @@ app.post('/account', (req, res) => {
       return
     }
     redisClient.get(sanitizeGmail(email), (err, reply) => {
-      if (err) throw err
+      if (err) logger.logAndThrow(err)
       if (reply !== null) {
         const emailData = JSON.parse(reply)
         if (Object.prototype.hasOwnProperty.call(emailData, 'expire')) {
@@ -224,7 +224,7 @@ app.post('/account', (req, res) => {
       const expireDate = new Date()
       expireDate.setTime(expireDate.getTime() + 3 * 86400000)
       redisClient.set(token, JSON.stringify({ username: username, email: email, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
-        if (err) throw err
+        if (err) logger.logAndThrow(err)
 
         logger.log('email-update', `email='${email}' username='${username}' redis response: ${reply}`)
       })
@@ -246,7 +246,7 @@ app.get('/verify-email', async (req, res) => {
     const today = new Date().toISOString().split('T')[0]
     if (data.expire <= today) {
       redisClient.del(token, (err, reply) => {
-        if (err) throw err
+        if (err) logger.logAndThrow(err)
       })
       logger.log('verify-email', `Error: expired token username=${data.username} expire=${data.expire} today=${today}`)
       res.end('Expired token')
@@ -268,7 +268,7 @@ app.get('/verify-email', async (req, res) => {
     req.session.data = loggedIn
     req.session.data.email = email
     redisClient.del(token, (err, reply) => {
-      if (err) throw err
+      if (err) logger.logAndThrow(err)
     })
     res.redirect('/account?mail=success')
   })
@@ -352,7 +352,7 @@ app.post('/new-password', (req, res) => {
     const today = new Date().toISOString().split('T')[0]
     if (data.expire <= today) {
       redisClient.del(token, (err, reply) => {
-        if (err) throw err
+        if (err) logger.logAndThrow(err)
       })
       logger.log('new-password', `Error: expired token username=${data.username} expire=${data.expire} today=${today}`)
       res.end('Expired token')
@@ -360,7 +360,7 @@ app.post('/new-password', (req, res) => {
     }
     execCmd('econ', `acc_edit ${data.username} password "${password}"`)
     redisClient.del(token, (err, reply) => {
-      if (err) throw err
+      if (err) logger.logAndThrow(err)
     })
     res.redirect('/login?password=success')
   })
@@ -392,7 +392,7 @@ app.get('/survey', async (req, res) => {
   const userIp = req.header('x-forwarded-for') || req.socket.remoteAddress
   getDb().get('SELECT * FROM Answers WHERE username = ?', req.session.data.username, (err, rows) => {
     if (err) {
-      throw err
+      logger.logAndThrow(err)
     }
     if (rows) {
       logger.log('survey', `'${req.session.data.username}' started editing the survey`)
@@ -400,7 +400,7 @@ app.get('/survey', async (req, res) => {
     } else {
       getDb().get('SELECT COUNT(*) AS count FROM Answers WHERE ip = ?', userIp, (err, rows) => {
         if (err) {
-          throw err
+          logger.logAndThrow(err)
         }
         if (rows && rows.count > 2) {
           logger.log('survey', `'${req.session.data.username}' could not vote due to ip limit reach`)
@@ -428,7 +428,7 @@ const getSurveyResult = (index) => {
     ORDER BY c DESC;
   `, (err, rows) => {
       if (err) {
-        throw err
+        logger.logAndThrow(err)
       }
       resolve(rows)
     })
@@ -459,7 +459,7 @@ app.post('/survey', async (req, res) => {
   const userIp = req.header('x-forwarded-for') || req.socket.remoteAddress
   getDb().get('SELECT * FROM Answers WHERE username = ?', req.session.data.username, (err, rows) => {
     if (err) {
-      throw err
+      logger.logAndThrow(err)
     }
     if (rows) {
       logger.log('survey', `'${req.session.data.username}' updated his vote: ${req.body.questions}`)
@@ -476,7 +476,7 @@ app.post('/survey', async (req, res) => {
       }
       getDb().get('SELECT COUNT(*) AS count FROM Answers WHERE ip = ?', userIp, (err, rows) => {
         if (err) {
-          throw err
+          logger.logAndThrow(err)
         }
         if (rows && rows.count > 2) {
           logger.log('survey', `'${req.session.data.username}' could not vote due to ip limit reach`)
@@ -521,7 +521,7 @@ app.post('/reset', (req, res) => {
     return
   }
   redisClient.get(sanitizeGmail(email), (err, reply) => {
-    if (err) throw err
+    if (err) logger.logAndThrow(err)
     if (reply !== null) {
       const emailData = JSON.parse(reply)
       if (Object.prototype.hasOwnProperty.call(emailData, 'expire')) {
@@ -538,12 +538,12 @@ app.post('/reset', (req, res) => {
     expireDate.setTime(expireDate.getTime() + 3 * 86400000)
     const username = acc.username
     redisClient.set(token, JSON.stringify({ username: username, expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
-      if (err) throw err
+      if (err) logger.logAndThrow(err)
 
       logger.log('password-reset', `token email='${email}' username='${username}' redis response: ${reply}`)
     })
     redisClient.set(sanitizeGmail(email), JSON.stringify({ expire: expireDate.toISOString().split('T')[0] }), (err, reply) => {
-      if (err) throw err
+      if (err) logger.logAndThrow(err)
 
       logger.log('password-reset', `email email='${email}' username='${username}' redis response: ${reply}`)
     })
