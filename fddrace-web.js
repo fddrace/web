@@ -626,7 +626,7 @@ app.get('/api/players/:player', (req, res) => {
 
 app.use(express.static('static'))
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   logger.log('server', `App running on http://localhost:${port}.`)
   testEcon()
 })
