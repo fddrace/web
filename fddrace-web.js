@@ -47,6 +47,7 @@ app.use(
 
 const isCaptcha = process.env.CAPTCHA_BACKEND && process.env.CAPTCHA_BACKEND !== ''
 const captchaData = {}
+const SCORE_HUMAN = 1
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -160,21 +161,22 @@ app.post('/verify', async (req, res) => {
     res.end('<html>Missing captcha. Please contact an admin<a href="/">back</a></html>')
     return
   }
-  if (captchaData[req.body.token] !== 1) {
-    fetch(captchaUrl)
-      .then(data => data.text())
-      .then(text => {
-        logger.log('verify', 'captcha data:')
-        logger.log('verify', text)
-        const result = JSON.parse(text)
-        if (result.score !== 1) {
-          res.redirect('/verify?verify=robot')
-        } else {
-          verifyCaptchaPassed(req, res)
-        }
-      })
+  if (captchaData[req.body.token] === SCORE_HUMAN) {
+    verifyCaptchaPassed(req, res)
+    return
   }
-  res.end('<html>Something went wrong.<a href="/">back</a></html>')
+  fetch(captchaUrl)
+    .then(data => data.text())
+    .then(text => {
+      logger.log('verify', 'captcha data:')
+      logger.log('verify', text)
+      const result = JSON.parse(text)
+      if (result.score !== SCORE_HUMAN) {
+        res.redirect('/verify?verify=robot')
+      } else {
+        verifyCaptchaPassed(req, res)
+      }
+    })
 })
 
 app.get('/login', (req, res) => {
@@ -404,7 +406,7 @@ app.post('/login', async (req, res) => {
           logger.log('login', 'captcha data:')
           logger.log('login', text)
           const result = JSON.parse(text)
-          if (result.score !== 1) {
+          if (result.score !== SCORE_HUMAN) {
             res.redirect('/login?login=robot')
           } else {
             loginCaptchaPassed(req, res)
@@ -653,7 +655,7 @@ app.post('/', (req, res) => {
     return
   }
   const score = req.body.score
-  if (score === 1) {
+  if (score === SCORE_HUMAN) {
     // do not save robot scores to save memory
     captchaData[req.body.token] = score
     logger.log('captcha', `result=hooman ip=${req.ip}`)
