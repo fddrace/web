@@ -68,13 +68,14 @@ const sanitizeGmail = email => {
   return email
 }
 
-const whitelist = (context, req, ipAddr) => {
+const whitelist = (context, ipAddr) => {
   const ipv4Regex = /^(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}$/gm
   let message = ''
+  let success = false
   if (!ipv4Regex.test(ipAddr)) {
     message = `<h1 style="color: red">Your ip <span style="color: rgb(130, 130, 130)">${ipAddr}</span> is not a valid ipv4!</h1>`
   } else {
-    req.session.verified = true
+    success = true
     message = `<h1>Your ip <span style="color: rgb(130, 130, 130)">${ipAddr}</span> is now whitelisted!</h1>`
     exec(`./wl.sh ${ipAddr}`, (err, stdout, stderr) => {
       if (err) {
@@ -88,7 +89,7 @@ const whitelist = (context, req, ipAddr) => {
       }
     })
   }
-  return message
+  return { message, success }
 }
 
 app.get('/', (req, res) => {
@@ -133,7 +134,11 @@ const verifyCaptchaPassed = async (req, res) => {
   // tokens are one use only
   delete captchaData[req.body.token]
   const ipAddr = (req.header('x-forwarded-for') || req.socket.remoteAddress).split(',')[0]
-  const message = whitelist('verify', req, ipAddr)
+  const wlistResult = whitelist('verify', ipAddr)
+  const message = wlistResult.message
+  if (wlistResult.success) {
+    req.session.verified = true
+  }
   res.render('index', {
     whitelistMessage: message,
     serverIp: process.env.IP_ADDR,
@@ -151,24 +156,25 @@ app.post('/verify', async (req, res) => {
   }
   const hexKey = Buffer.from(process.env.IP_ADDR + process.env.HOSTNAME + req.body.token, 'utf8').toString('hex')
   const captchaUrl = `${process.env.CAPTCHA_BACKEND}/score/${hexKey}`
-  if (isCaptcha) {
-    if (captchaData[req.body.token] !== 1) {
-      fetch(captchaUrl)
-        .then(data => data.text())
-        .then(text => {
-          logger.log('verify', 'captcha data:')
-          logger.log('verify', text)
-          const result = JSON.parse(text)
-          if (result.score !== 1) {
-            res.redirect('/verify?verify=robot')
-          } else {
-            verifyCaptchaPassed(req, res)
-          }
-        })
-      return
-    }
+  if (!isCaptcha) {
+    res.end('<html>Missing captcha. Please contact an admin<a href="/">back</a></html>')
+    return
   }
-  verifyCaptchaPassed(req, res)
+  if (captchaData[req.body.token] !== 1) {
+    fetch(captchaUrl)
+      .then(data => data.text())
+      .then(text => {
+        logger.log('verify', 'captcha data:')
+        logger.log('verify', text)
+        const result = JSON.parse(text)
+        if (result.score !== 1) {
+          res.redirect('/verify?verify=robot')
+        } else {
+          verifyCaptchaPassed(req, res)
+        }
+      })
+  }
+  res.end('<html>Something went wrong.<a href="/">back</a></html>')
 })
 
 app.get('/login', (req, res) => {
