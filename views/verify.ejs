@@ -1,0 +1,24 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>fokkonaut's playground</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <%- include('partial/navbar', {data: undefined}); %>
+    <div class="wrapper">
+        <div class="content flex-center">
+            <form action="/verify" method="POST">
+                <input type="hidden" name="token" id="token" value="<%= token %>">
+                <% if (isCaptcha) { %>
+                    <iframe src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>&w=90&h=50&ip=<%= serverIp %>" scrolling="yes" frameborder="0"></iframe>
+                <% } %>
+                <br>
+                <input type="submit" value="verify" class="btn">
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -9,6 +9,7 @@
     <script src="/main.js"></script>
 </head>
 <body>
+    <%- include('partial/navbar', {data: undefined}); %>
     <% if (messageGreen) { %>
         <div class="message-green"><%= messageGreen %></div>
     <% } %>
