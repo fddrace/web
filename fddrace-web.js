@@ -95,7 +95,7 @@ const whitelist = (context, ipAddr) => {
 app.get('/', (req, res) => {
   // const ipAddr = (req.header('x-forwarded-for') || req.socket.remoteAddress).split(',')[0]
   // const message = whitelist('index', req, ipAddr)
-  if (!req.session.data.verified) {
+  if (!req.session.data || !req.session.data.verified) {
     res.redirect('/verify')
   }
   const message = ''
