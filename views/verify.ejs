@@ -17,6 +17,11 @@
     <div class="wrapper">
         <div class="content flex-center">
             <form action="/verify" method="POST">
+                <h1>Solve captcha to verify</h1>
+                <span>
+                    After successfully solving the captcha
+                    you can join the teeworlds server at tw.fokkonaut.de
+                </span>
                 <input type="hidden" name="token" id="token" value="<%= token %>">
                 <% if (isCaptcha) { %>
                     <iframe src="<%= captchaBackend %>/?t=<%= token %>&callback=<%= hostname %>&w=90&h=50&ip=<%= serverIp %>" scrolling="yes" frameborder="0"></iframe>
