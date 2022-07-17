@@ -96,7 +96,7 @@ const whitelist = (context, ipAddr) => {
 app.get('/', (req, res) => {
   // const ipAddr = (req.header('x-forwarded-for') || req.socket.remoteAddress).split(',')[0]
   // const message = whitelist('index', req, ipAddr)
-  if (!req.session.data || !req.session.data.verified) {
+  if (!req.session.verified) {
     res.redirect('/verify')
     return
   }
@@ -139,7 +139,7 @@ const verifyCaptchaPassed = async (req, res) => {
   const wlistResult = whitelist('verify', ipAddr)
   const message = wlistResult.message
   if (wlistResult.success) {
-    req.session.data.verified = true
+    req.session.verified = true
   }
   res.render('index', {
     whitelistMessage: message,
