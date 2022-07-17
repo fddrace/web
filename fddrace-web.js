@@ -98,6 +98,7 @@ app.get('/', (req, res) => {
   // const message = whitelist('index', req, ipAddr)
   if (!req.session.data || !req.session.data.verified) {
     res.redirect('/verify')
+    return
   }
   const message = ''
   res.render('index', {
