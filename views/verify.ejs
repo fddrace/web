@@ -8,6 +8,12 @@
 </head>
 <body>
     <%- include('partial/navbar', {data: undefined}); %>
+    <% if (messageGreen) { %>
+        <div class="message-green"><%= messageGreen %></div>
+    <% } %>
+    <% if (messageRed) { %>
+        <div class="message-red"><%= messageRed %></div>
+    <% } %>
     <div class="wrapper">
         <div class="content flex-center">
             <form action="/verify" method="POST">

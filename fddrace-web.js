@@ -139,7 +139,7 @@ const verifyCaptchaPassed = async (req, res) => {
   const wlistResult = whitelist('verify', ipAddr)
   const message = wlistResult.message
   if (wlistResult.success) {
-    // req.session.data.verified = true
+    req.session.data.verified = true
   }
   res.render('index', {
     whitelistMessage: message,
